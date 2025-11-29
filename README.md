@@ -44,7 +44,7 @@ Android 공식문서에 서술된 [Android App Architecture](https://developer.a
 
 ## 🗂️ Packages
 ```
-Expo Android
+Gwangsan Android
  ┣ 📂app
  ┃ ┣ 📂navigation
  ┃ ┣ 📂ui
