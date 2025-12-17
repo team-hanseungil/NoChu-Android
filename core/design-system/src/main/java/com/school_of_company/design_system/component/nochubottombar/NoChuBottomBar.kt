@@ -21,10 +21,6 @@ import com.school_of_company.design_system.R
 import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.design_system.theme.color.GwangSanColor
 
-// ====================================================================
-// NoChuNavigationBarItem & NoChuNavigationBar (변경 없음)
-// ====================================================================
-
 @Composable
 fun RowScope.NoChuNavigationBarItem(
     modifier: Modifier = Modifier,
@@ -44,10 +40,9 @@ fun RowScope.NoChuNavigationBarItem(
         icon = if (selected) selectedIcon else icon,
         alwaysShowLabel = alwaysShowLabel,
         colors = NavigationBarItemDefaults.colors(
-            // 텍스트와 아이콘 모두 main500 (보라색으로 가정) 사용
             selectedIconColor = GwangSanColor.purple,
             unselectedIconColor = GwangSanColor.gray500,
-            selectedTextColor = GwangSanColor.purple, // 텍스트 색상
+            selectedTextColor = GwangSanColor.purple,
             unselectedTextColor = GwangSanColor.gray500,
             indicatorColor = GwangSanColor.white
         ) ,
