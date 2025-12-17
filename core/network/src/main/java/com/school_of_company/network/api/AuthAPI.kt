@@ -42,4 +42,5 @@ interface AuthAPI {
     suspend fun signUpCertificationNumberCertification(
         @Body body: SmsVerifyCodeRequest
     )
+    
 }

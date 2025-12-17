@@ -13,7 +13,6 @@ import com.school_of_company.model.auth.request.SmsVerifyCodeRequestModel
 import com.school_of_company.network.errorHandling
 import com.school_of_company.result.asResult
 import com.school_of_company.signup.viewmodel.uistate.SendNumberUiState
-import com.school_of_company.signup.viewmodel.uistate.SignUpUiState
 import com.school_of_company.signup.viewmodel.uistate.VerifyNumberUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -43,8 +42,7 @@ class SignUpViewModel @Inject constructor(
         private const val PLACE_NAME = "placeName"
     }
 
-    private val _signUpUiState = MutableStateFlow<SignUpUiState>(SignUpUiState.Loading)
-    internal val signUpUiState = _signUpUiState.asStateFlow()
+
 
     private val _sendNumberUiState = MutableStateFlow<SendNumberUiState>(SendNumberUiState.Loading)
     internal val sendNumberUiState = _sendNumberUiState.asStateFlow()
@@ -71,40 +69,6 @@ class SignUpViewModel @Inject constructor(
     internal var specialtyText = savedStateHandle.getStateFlow(SPECIALTY_TEXT, "")
     internal var placeName = savedStateHandle.getStateFlow(PLACE_NAME, "")
 
-    internal fun signUp(body: SignUpRequestModel) = viewModelScope.launch {
-        _signUpUiState.value = SignUpUiState.Loading
-        when {
-            password.value != checkPassword.value -> {
-                _signUpUiState.value = SignUpUiState.PasswordMismatch
-            }
-
-            !isValidPassword(body.password) -> {
-                _signUpUiState.value = SignUpUiState.PasswordNotValid
-            }
-
-            else -> {
-                _signUpUiState.value = SignUpUiState.Loading
-                authRepository.signUp(body = body)
-                    .asResult()
-                    .collectLatest { result ->
-                        when (result) {
-                            is Result.Success -> _signUpUiState.value =
-                                SignUpUiState.Success
-
-                            is Result.Error -> {
-                                _signUpUiState.value = SignUpUiState.Error(result.exception)
-                                result.exception.errorHandling(
-                                    conflictAction = { _signUpUiState.value = SignUpUiState.Conflict },
-                                    unauthorizedAction = { _signUpUiState.value = SignUpUiState.Unauthorized },
-                                )
-                            }
-
-                            is Result.Loading -> _signUpUiState.value = SignUpUiState.Loading
-                        }
-                    }
-            }
-        }
-    }
 
     internal fun verifyNumber(phoneNumber: String, code: String) =
         viewModelScope.launch {

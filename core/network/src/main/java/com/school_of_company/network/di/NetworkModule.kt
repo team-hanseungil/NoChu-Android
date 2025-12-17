@@ -74,7 +74,7 @@ object NetworkModule {
         moshiConverterFactory: MoshiConverterFactory,
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.BASE_URL)
+            .baseUrl("http://k8s-spring-springap-6d0eb21483-1423322532.ap-northeast-2.elb.amazonaws.com")
             .client(okHttpClient)
             .addConverterFactory(moshiConverterFactory)
             .build()

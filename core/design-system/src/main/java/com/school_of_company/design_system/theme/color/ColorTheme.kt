@@ -23,6 +23,7 @@ abstract class ColorTheme {
     abstract val subBlue300: Color
     abstract val subBlue200: Color
     abstract val subBlue100: Color
+    abstract val subPOPule: Color
 
     abstract val subYellow900: Color
     abstract val subYellow800: Color

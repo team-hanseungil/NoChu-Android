@@ -7,15 +7,18 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.school_of_company.Regex.isValidId
+import com.school_of_company.Regex.isValidPassword
 import com.school_of_company.data.repository.auth.AuthRepository
 import com.school_of_company.data.repository.local.LocalRepository
 import com.school_of_company.model.auth.request.LoginRequestModel
+import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.network.errorHandling
 import com.school_of_company.network.util.DeviceIdManager
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
 import com.school_of_company.signin.viewmodel.uistate.SaveTokenUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
+import com.school_of_company.signin.viewmodel.uistate.SignUpUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +37,31 @@ internal class SignInViewModel @Inject constructor(
         private const val ID = "id"
         private const val PASSWORD = "password"
     }
+
+    private val _signUpUiState = MutableStateFlow<SignUpUiState>(SignUpUiState.Loading)
+    internal val signUpUiState = _signUpUiState.asStateFlow()
+
+    internal fun signUp(body: SignUpRequestModel) = viewModelScope.launch {
+        _signUpUiState.value = SignUpUiState.Loading
+
+        authRepository.signUp(body)
+            .asResult()
+            .collectLatest { result ->
+                when (result) {
+                    is Result.Success -> _signUpUiState.value = SignUpUiState.Success
+                    is Result.Loading -> _signUpUiState.value = SignUpUiState.Loading
+                    is Result.Error -> {
+                        _signUpUiState.value = SignUpUiState.Error(result.exception)
+                        result.exception.errorHandling(
+                            conflictAction = { _signUpUiState.value = SignUpUiState.Conflict },
+                            unauthorizedAction = { _signUpUiState.value = SignUpUiState.Unauthorized },
+                        )
+                    }
+                }
+            }
+    }
+
+
 
     private val _signInUiState = MutableStateFlow<SignInUiState>(SignInUiState.Loading)
     internal val signInUiState = _signInUiState.asStateFlow()
