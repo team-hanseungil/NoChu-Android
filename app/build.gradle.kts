@@ -30,7 +30,6 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:model"))
     implementation(project(":core:common"))
-    implementation(project(":core:firebase"))
 
     implementation(project(":feature:content"))
     implementation(project(":feature:chat"))
