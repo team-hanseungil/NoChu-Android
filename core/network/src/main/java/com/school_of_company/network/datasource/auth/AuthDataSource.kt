@@ -12,7 +12,7 @@ import okhttp3.MultipartBody
 interface AuthDataSource {
     fun signUp(body: SignUpRequest): Flow<Unit>
 
-    fun login(body: LoginRequest): Flow<LoginResponse>
+    fun login(body: SignUpRequest): Flow<LoginResponse>
 
     fun postFace(memberId: Long,image: MultipartBody.Part): Flow<EmotionResponse>
 

@@ -5,8 +5,5 @@ import com.school_of_company.network.dto.reponse.LoginResponse
 
 fun LoginResponse.toModel(): LoginResponseModel =
     LoginResponseModel(
-        refreshToken = refreshToken,
-        refreshTokenExpiresIn = refreshTokenExpiresIn,
-        accessToken = accessToken,
-        accessTokenExpiresIn = accessTokenExpiresIn
+        memberId = memberId
     )

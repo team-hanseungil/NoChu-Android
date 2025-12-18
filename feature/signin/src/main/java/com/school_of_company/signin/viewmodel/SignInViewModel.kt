@@ -83,7 +83,7 @@ internal class SignInViewModel @Inject constructor(
 
     }
 
-    internal fun login(deviceId: UUID) = viewModelScope.launch {
+    internal fun login() = viewModelScope.launch {
         _signInUiState.value = SignInUiState.Loading
 
         val nicknameValue = id.value
@@ -96,14 +96,14 @@ internal class SignInViewModel @Inject constructor(
             return@launch
         }
 
-        val body = LoginRequestModel(
+        val body = SignUpRequestModel(
             nickname = nicknameValue,
             password = passwordValue,
-            deviceToken = deviceToken,
-            deviceId = deviceId.toString()
         )
 
-        authRepository.signIn(body)
+        authRepository.signIn(
+            body = body
+        )
             .asResult()
             .collectLatest { result ->
                 when (result) {

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 
 interface AuthRepository {
-    fun signIn(body: LoginRequestModel): Flow<LoginResponseModel>
+    fun signIn(body: SignUpRequestModel): Flow<LoginResponseModel>
 
     fun signUp(body: SignUpRequestModel): Flow<Unit>
 

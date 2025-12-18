@@ -18,11 +18,14 @@ class AuthDataSourceImpl @Inject constructor(
     override fun signUp(body: SignUpRequest): Flow<Unit> =
         performApiRequest { authAPI.signUp(body) }
 
-    override fun login(body: LoginRequest): Flow<LoginResponse> =
-        performApiRequest { authAPI.login(body = body)}
+    override fun login(body: SignUpRequest, ): Flow<LoginResponse> =
+        performApiRequest { authAPI.login(body = body,)}
 
-    override fun tokenRefresh(refreshToken: String): Flow<LoginResponse> =
-        performApiRequest { authAPI.tokenRefresh(refreshToken = refreshToken) }
+
+    override fun tokenRefresh(): Flow<LoginResponse> =
+        performApiRequest { authAPI.tokenRefresh() }
+
+
 
     override fun postFace(memberId: Long,image: MultipartBody.Part,): Flow<EmotionResponse> =
         performApiRequest { authAPI.postFace(memberId = memberId, file = image) }

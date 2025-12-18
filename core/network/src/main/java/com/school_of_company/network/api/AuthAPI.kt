@@ -28,7 +28,7 @@ interface AuthAPI {
 
     @POST("/api/auth/signin")
     suspend fun login(
-        @Body body: LoginRequest
+        @Body body: SignUpRequest
     ): LoginResponse
 
     // 💡 수정된 부분: @Header 인자를 추가하여 RefreshToken을 명시적으로 전달

@@ -22,7 +22,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val remoteDatasource: AuthDataSource,
     private val localDataSource: AuthTokenDataSource
 ) : AuthRepository {
-    override fun signIn(body: LoginRequestModel): Flow<LoginResponseModel> {
+    override fun signIn(body:SignUpRequestModel): Flow<LoginResponseModel> {
         return remoteDatasource.login(
             body = body.toDto()
         ).transform { response ->
@@ -59,10 +59,6 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveToken(token: LoginResponseModel) {
-        localDataSource.setAccessToken(token.accessToken)
-        localDataSource.setRefreshToken(token.refreshToken)
-        localDataSource.setAccessTokenExp(token.accessTokenExpiresIn)
-        localDataSource.setRefreshTokenExp(token.refreshTokenExpiresIn)
     }
 
     override suspend fun deleteTokenData() {
