@@ -19,6 +19,7 @@ import com.school_of_company.gwangsan.ui.GwangSanApp
 import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.device.manager.DeviceTokenManager
 import com.school_of_company.main.navgation.MainStartRoute
+import com.school_of_company.signin.navigation.SignInRoute
 import com.school_of_company.signin.navigation.StartRoute
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
             if (viewModel.appLoginState.value is AppLoginState.Loading) return@setContent
             val startDestination = when (viewModel.appLoginState.value) {
                 is AppLoginState.Success -> MainStartRoute// 로그인 성공시 홈으로
-                else ->  StartRoute// 그 외에는 로그인 화면으로
+                else ->  SignInRoute// 그 외에는 로그인 화면으로
             }
             CompositionLocalProvider {
                 GwangSanTheme { _, _ ->

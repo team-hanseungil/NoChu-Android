@@ -13,6 +13,8 @@ object GwangSanColor : ColorTheme() {
     override val main300 = Color(0xFFBCDB77)
     override val main200 = Color(0xFFD2E7A5)
     override val main100 = Color(0xFFE9F3D2)
+    override val subPOPule = Color(0xFF5E5BD6)
+
 
     // Sub Blue Color
     override val subBlue900 = Color(0xFF001727)

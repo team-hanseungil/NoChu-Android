@@ -1,5 +1,4 @@
-package com.school_of_company.signup.viewmodel.uistate
-
+package com.school_of_company.signin.viewmodel.uistate
 
 sealed interface SignUpUiState {
     data object Loading : SignUpUiState

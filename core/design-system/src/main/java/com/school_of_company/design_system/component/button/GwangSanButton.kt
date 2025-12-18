@@ -86,7 +86,7 @@ fun GwangSanStateButton(
             interactionSource = interactionSource,
             enabled = enabledState(state),
             colors = ButtonDefaults.buttonColors(
-                containerColor = colors.main500,
+                containerColor = colors.subPOPule,
                 contentColor = colors.white,
                 disabledContainerColor = colors.gray200,
                 disabledContentColor = colors.gray400
