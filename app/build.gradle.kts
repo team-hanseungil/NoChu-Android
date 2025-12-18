@@ -41,7 +41,10 @@ dependencies {
     implementation(project(":feature:signup"))
     implementation(project(":feature:profile"))
 
-
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.crashlytics)
     implementation(libs.androidx.window.size)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.navigation.runtime)

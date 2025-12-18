@@ -1,5 +1,6 @@
 package com.school_of_company.network.di
 
+import android.content.Context
 import android.util.Log
 import com.school_of_company.network.BuildConfig
 import com.school_of_company.network.api.AlertAPI
@@ -18,6 +19,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.CookieJar
 import okhttp3.OkHttpClient
@@ -38,6 +40,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkhttpClient(
+        @ApplicationContext context: Context,
         httpLoggingInterceptor: HttpLoggingInterceptor,
         authInterceptor: AuthInterceptor,
         tokenAuthenticator: com.school_of_company.network.util.TokenAuthenticator
@@ -74,7 +77,7 @@ object NetworkModule {
         moshiConverterFactory: MoshiConverterFactory,
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://k8s-spring-springap-6d0eb21483-1423322532.ap-northeast-2.elb.amazonaws.com")
+            .baseUrl("https://api.hanseungil.shop")
             .client(okHttpClient)
             .addConverterFactory(moshiConverterFactory)
             .build()
