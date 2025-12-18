@@ -10,17 +10,18 @@ import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 
 interface AuthRepository {
-    fun signUp(body: SignUpRequestModel) : Flow<Unit>
+    fun signIn(body: LoginRequestModel): Flow<LoginResponseModel>
 
-    fun signIn(body: LoginRequestModel) : Flow<LoginResponseModel>
+    fun signUp(body: SignUpRequestModel): Flow<Unit>
 
-    fun tokenRefresh() : Flow<LoginResponseModel>
+    fun logout(): Flow<Unit>
 
-    fun logout() : Flow<Unit>
+    // 💡 수정된 부분: tokenRefresh는 인자를 받지 않고, 내부에서 토큰을 처리합니다.
+    fun tokenRefresh(): Flow<LoginResponseModel>
 
-    fun signLogout() : Flow<Unit>
+    fun signLogout(): Flow<Unit>
 
-    fun getRefreshToken() : Flow<String>
+    fun getRefreshToken(): Flow<String>
 
     fun postFace(memberId: Long,image: MultipartBody.Part) : Flow<EmotionResponseModel>
 
@@ -29,9 +30,9 @@ interface AuthRepository {
 
     suspend fun deleteTokenData()
 
-    suspend fun getAccessToken() : Flow<String>
+    suspend fun getAccessToken(): Flow<String>
 
-    fun signUpCertificationNumberCertification(body: SmsVerifyCodeRequestModel) : Flow<Unit>
+    fun signUpCertificationNumberCertification(body: SmsVerifyCodeRequestModel): Flow<Unit>
 
-    fun signUpCertificationNumberSend(body: SignUpCertificationNumberSendRequestModel) : Flow<Unit>
+    fun signUpCertificationNumberSend(body: SignUpCertificationNumberSendRequestModel): Flow<Unit>
 }

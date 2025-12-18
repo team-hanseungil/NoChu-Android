@@ -14,6 +14,8 @@ import com.school_of_company.network.mapper.auth.request.toModel
 import com.school_of_company.network.mapper.auth.response.toModel
 import kotlinx.coroutines.flow.transform
 import okhttp3.MultipartBody
+import kotlinx.coroutines.flow.first // Flow.first() 사용을 위해 추가
+import kotlinx.coroutines.runBlocking // Flow를 블로킹하여 값을 가져오기 위해 추가
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(

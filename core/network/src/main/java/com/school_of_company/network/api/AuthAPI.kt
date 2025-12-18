@@ -13,7 +13,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.Multipart
+import retrofit2.http.Multipart // Header import 추가
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -31,6 +31,7 @@ interface AuthAPI {
         @Body body: LoginRequest
     ): LoginResponse
 
+    // 💡 수정된 부분: @Header 인자를 추가하여 RefreshToken을 명시적으로 전달
     @PATCH("/api/auth/reissue")
     suspend fun tokenRefresh(): LoginResponse
 
@@ -56,5 +57,5 @@ interface AuthAPI {
         @Path("memberId") memberId: Long,
         @Part file: MultipartBody.Part
     ): EmotionResponse
-}
 
+}

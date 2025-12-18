@@ -34,11 +34,17 @@ class TokenAuthenticator @Inject constructor(
         return try {
             val retrofit = Retrofit.Builder()
                 .baseUrl(BuildConfig.BASE_URL)
+                // MoshiConverterFactory는 Dagger Hilt 모듈에서 주입받는 것을 권장하지만,
+                // 이 Authenticator는 DI의 통제 밖에 있으므로 여기서 직접 생성합니다.
                 .addConverterFactory(MoshiConverterFactory.create())
                 .build()
 
             val authApi = retrofit.create(AuthAPI::class.java)
-            val response = runBlocking { authApi.tokenRefresh() }
+
+            // 💡 수정된 부분: 토큰 갱신 API 호출 시 refreshToken을 인자로 전달
+            val response = runBlocking {
+                authApi.tokenRefresh(refreshToken = refreshToken)
+            }
 
             runBlocking {
                 with(dataSource) {
@@ -51,6 +57,7 @@ class TokenAuthenticator @Inject constructor(
 
             response.accessToken
         } catch (e: Exception) {
+            // 토큰 갱신 실패 시 로그아웃 처리 등을 할 수 있습니다.
             null
         }
     }

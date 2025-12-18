@@ -30,6 +30,7 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:model"))
     implementation(project(":core:common"))
+
     implementation(project(":feature:content"))
     implementation(project(":feature:chat"))
     implementation(project(":feature:inform"))

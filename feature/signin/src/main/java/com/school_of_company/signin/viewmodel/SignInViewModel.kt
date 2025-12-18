@@ -42,8 +42,18 @@ internal class SignInViewModel @Inject constructor(
         private const val PASSWORD = "password"
     }
 
+    // =========================== 상태 ===========================
+
+    internal var id = savedStateHandle.getStateFlow(key = ID, initialValue = "")
+    internal var password = savedStateHandle.getStateFlow(key = PASSWORD, initialValue = "")
+
+    private val _signInUiState = MutableStateFlow<SignInUiState>(SignInUiState.Loading)
+    internal val signInUiState = _signInUiState.asStateFlow()
+
     private val _signUpUiState = MutableStateFlow<SignUpUiState>(SignUpUiState.Loading)
     internal val signUpUiState = _signUpUiState.asStateFlow()
+
+    // ========================= 로그인 로직 ==========================
 
     private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Loading)
     internal val postFaceUiState = _signUpUiState.asStateFlow()
@@ -55,7 +65,7 @@ internal class SignInViewModel @Inject constructor(
         authRepository.postFace(memberId, multipartFile)
             .asResult()
             .collectLatest {
-                result ->
+                    result ->
                 when (result) {
                     is Result.Loading -> {
                         _postFaceUiState.value = PostFaceUiState.Loading
@@ -73,44 +83,18 @@ internal class SignInViewModel @Inject constructor(
 
     }
 
-    internal fun signUp(body: SignUpRequestModel) = viewModelScope.launch {
-        _signUpUiState.value = SignUpUiState.Loading
-
-        authRepository.signUp(body)
-            .asResult()
-            .collectLatest { result ->
-                when (result) {
-                    is Result.Success -> _signUpUiState.value = SignUpUiState.Success
-                    is Result.Loading -> _signUpUiState.value = SignUpUiState.Loading
-                    is Result.Error -> {
-                        _signUpUiState.value = SignUpUiState.Error(result.exception)
-                        result.exception.errorHandling(
-                            conflictAction = { _signUpUiState.value = SignUpUiState.Conflict },
-                            unauthorizedAction = { _signUpUiState.value = SignUpUiState.Unauthorized },
-                        )
-                    }
-                }
-            }
-    }
-
-
-
-    private val _signInUiState = MutableStateFlow<SignInUiState>(SignInUiState.Loading)
-    internal val signInUiState = _signInUiState.asStateFlow()
-
-    internal var id = savedStateHandle.getStateFlow(key = ID, initialValue = "")
-    internal var password = savedStateHandle.getStateFlow(key = PASSWORD, initialValue = "")
-
     internal fun login(deviceId: UUID) = viewModelScope.launch {
+        _signInUiState.value = SignInUiState.Loading
+
         val nicknameValue = id.value
         val passwordValue = password.value
 
         val deviceToken = localRepository.getDeviceToken()
 
-//        if (!isValidId(nicknameValue)) {
-//            _signInUiState.value = SignInUiState.IdNotValid
-//            return@launch
-//        }
+        if (!isValidId(nicknameValue)) {
+            _signInUiState.value = SignInUiState.IdNotValid
+            return@launch
+        }
 
         val body = LoginRequestModel(
             nickname = nicknameValue,
@@ -144,6 +128,30 @@ internal class SignInViewModel @Inject constructor(
                 }
             }
     }
+
+    // ========================= 회원가입 로직 =========================
+
+    internal fun signUp(body: SignUpRequestModel) = viewModelScope.launch {
+        _signUpUiState.value = SignUpUiState.Loading
+
+        authRepository.signUp(body)
+            .asResult()
+            .collectLatest { result ->
+                when (result) {
+                    is Result.Success -> _signUpUiState.value = SignUpUiState.Success
+                    is Result.Loading -> _signUpUiState.value = SignUpUiState.Loading
+                    is Result.Error -> {
+                        _signUpUiState.value = SignUpUiState.Error(result.exception)
+                        result.exception.errorHandling(
+                            conflictAction = { _signUpUiState.value = SignUpUiState.Conflict },
+                            unauthorizedAction = { _signUpUiState.value = SignUpUiState.Unauthorized },
+                        )
+                    }
+                }
+            }
+    }
+
+    // ======================= 데이터 변경 핸들러 ========================
 
     internal fun onIdChange(value: String) {
         savedStateHandle[ID] = value

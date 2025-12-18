@@ -10,6 +10,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:signup"))
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(project(":feature:post"))

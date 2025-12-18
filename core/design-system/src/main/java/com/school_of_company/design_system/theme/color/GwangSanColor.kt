@@ -61,4 +61,6 @@ object GwangSanColor : ColorTheme() {
 
     // focus dropdown Color
     override val focus = Color(0xFFF1F5F9)
+
+    override val purple = Color(0xFF9E7FFF)
 }
