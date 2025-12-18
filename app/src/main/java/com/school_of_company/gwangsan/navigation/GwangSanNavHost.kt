@@ -47,9 +47,11 @@ import com.school_of_company.profile.navigation.navigateToOtherPersonProfile
 import com.school_of_company.profile.navigation.navigateToOtherReview
 import com.school_of_company.profile.navigation.otherPersonProfileScreen
 import com.school_of_company.profile.navigation.otherReviewScreen
+import com.school_of_company.signin.navigation.SignUpRoute
 import com.school_of_company.signin.navigation.StartRoute
 import com.school_of_company.signin.navigation.navigateToSignIn
 import com.school_of_company.signin.navigation.signInScreen
+import com.school_of_company.signin.navigation.signUpScreen // signUpScreen 사용을 위해 추가
 
 @Composable
 fun GwangsanNavHost(
@@ -83,10 +85,16 @@ fun GwangsanNavHost(
         signInScreen(
             onBackClick = { navController.popBackStack() },
             onMainClick = { navController.navigateToHomeAndClearLogin() },
-            onErrorToast = onErrorToast
+            onErrorToast = onErrorToast,
+            onSignUpClick = { navController.navigate(SignUpRoute) }
         )
 
-
+        // 회원가입 화면 목적지 등록 (이전 충돌 해결)
+        signUpScreen(
+            onBackClick = { navController.popBackStack() },
+            onSignInClick = { navController.popBackStack() },
+            onErrorToast = onErrorToast
+        )
 
 
         mainScreen(
@@ -112,21 +120,6 @@ fun GwangsanNavHost(
 
         chatRoomScreen(
             onBackClick = { navController.popBackStack() },
-        )
-
-        readMoreScreen(
-            onBackClick = { navController.popBackStack() },
-            onOtherProfileClick = { memberId ->
-                navController.navigateToOtherPersonProfile(memberId = memberId)
-            },
-            onChatClick = { id, roomId ->
-                navController.navigateToChatRoom(id, roomId)
-            },
-            onReviewClick = { _, _ -> },
-            onReportClick = { _, _ -> },
-            onEditClick = { id, type, mode ->
-                navController.navigateToPostEdit(id)
-            }
         )
 
         informScreen(
@@ -187,14 +180,6 @@ fun GwangsanNavHost(
 
         )
 
-        myWritingDetailScreen(
-            onBackClick = { navController.popBackStack() },
-            onCompleteClick = { navController.popBackStack() },
-            onErrorToast = onErrorToast,
-            onEditClick = { id, type, mode ->
-                navController.navigateToPostEdit(id)
-            }
-        )
 
         otherReviewScreen(
             onBackClick = { navController.popBackStack() },

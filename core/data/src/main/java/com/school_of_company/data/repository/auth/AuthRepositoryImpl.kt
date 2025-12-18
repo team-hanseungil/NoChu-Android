@@ -12,6 +12,8 @@ import com.school_of_company.network.mapper.auth.request.toDto
 import com.school_of_company.network.mapper.auth.request.toModel
 import com.school_of_company.network.mapper.auth.response.toModel
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.first // Flow.first() 사용을 위해 추가
+import kotlinx.coroutines.runBlocking // Flow를 블로킹하여 값을 가져오기 위해 추가
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -34,8 +36,15 @@ class AuthRepositoryImpl @Inject constructor(
         return remoteDatasource.logout()
     }
 
+    // 💡 수정된 부분: 토큰을 로컬에서 읽어와 DataSource에 전달
     override fun tokenRefresh(): Flow<LoginResponseModel> {
-        return remoteDatasource.tokenRefresh().transform { response ->
+        // 1. runBlocking을 사용하여 로컬 Flow에서 RefreshToken 값을 즉시 가져옵니다.
+        val refreshToken = runBlocking {
+            localDataSource.getRefreshToken().first()
+        }
+
+        // 2. RefreshToken을 DataSource에 전달하여 네트워크 호출을 수행합니다.
+        return remoteDatasource.tokenRefresh(refreshToken).transform { response ->
             emit(response.toModel())
         }
     }

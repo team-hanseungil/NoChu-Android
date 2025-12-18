@@ -6,19 +6,14 @@ import com.school_of_company.network.dto.auth.requset.SignUpRequest
 import com.school_of_company.network.dto.auth.requset.SmsVerifyCodeRequest
 import com.school_of_company.network.dto.reponse.LoginResponse
 import kotlinx.coroutines.flow.Flow
-
+// AuthDataSource 인터페이스도 이와 같이 수정되어야 합니다.
 interface AuthDataSource {
     fun signUp(body: SignUpRequest): Flow<Unit>
-
     fun login(body: LoginRequest): Flow<LoginResponse>
-
-    fun tokenRefresh(): Flow<LoginResponse>
-
+    // 💡 AuthDataSource 인터페이스도 tokenRefresh 함수에 인자를 추가해야 합니다.
+    fun tokenRefresh(refreshToken: String): Flow<LoginResponse>
     fun signLogout(): Flow<Unit>
-
     fun logout(): Flow<Unit>
-
-    fun signUpCertificationNumberCertification(body: SmsVerifyCodeRequest) : Flow<Unit>
-
-    fun signUpCertificationNumberSend(body: SignUpCertificationNumberSendRequest) : Flow<Unit>
+    fun signUpCertificationNumberCertification(body: SmsVerifyCodeRequest): Flow<Unit>
+    fun signUpCertificationNumberSend(body: SignUpCertificationNumberSendRequest): Flow<Unit>
 }
