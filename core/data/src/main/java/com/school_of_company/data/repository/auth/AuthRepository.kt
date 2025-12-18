@@ -1,11 +1,13 @@
 package com.school_of_company.data.repository.auth
 
+import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.SignUpCertificationNumberSendRequestModel
 import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.model.auth.request.SmsVerifyCodeRequestModel
 import com.school_of_company.model.auth.response.LoginResponseModel
 import kotlinx.coroutines.flow.Flow
+import okhttp3.MultipartBody
 
 interface AuthRepository {
     fun signUp(body: SignUpRequestModel) : Flow<Unit>
@@ -19,6 +21,9 @@ interface AuthRepository {
     fun signLogout() : Flow<Unit>
 
     fun getRefreshToken() : Flow<String>
+
+    fun postFace(memberId: Long,image: MultipartBody.Part) : Flow<EmotionResponseModel>
+
 
     suspend fun saveToken(token: LoginResponseModel)
 

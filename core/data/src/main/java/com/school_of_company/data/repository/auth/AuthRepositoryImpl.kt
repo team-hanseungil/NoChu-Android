@@ -1,6 +1,7 @@
 package com.school_of_company.data.repository.auth
 
 import com.school_of_company.datastore.datasource.AuthTokenDataSource
+import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.SignUpCertificationNumberSendRequestModel
 import com.school_of_company.model.auth.request.SignUpRequestModel
@@ -12,6 +13,7 @@ import com.school_of_company.network.mapper.auth.request.toDto
 import com.school_of_company.network.mapper.auth.request.toModel
 import com.school_of_company.network.mapper.auth.response.toModel
 import kotlinx.coroutines.flow.transform
+import okhttp3.MultipartBody
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -42,6 +44,12 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun signLogout(): Flow<Unit> {
         return remoteDatasource.signLogout()
+    }
+
+    override fun postFace(memberId: Long, image: MultipartBody.Part): Flow<EmotionResponseModel> {
+        return remoteDatasource.postFace(memberId = memberId, image = image).transform { response ->
+            emit(response.toModel())
+        }
     }
 
     override fun getRefreshToken(): Flow<String> {

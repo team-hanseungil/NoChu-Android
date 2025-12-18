@@ -2,6 +2,7 @@ package com.school_of_company.signin.viewmodel
 
 import android.content.ContentValues.TAG
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -14,8 +15,11 @@ import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.network.errorHandling
 import com.school_of_company.network.util.DeviceIdManager
+import com.school_of_company.post.viewmodel.uiState.ImageUpLoadUiState
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
+import com.school_of_company.signin.view.getMultipartFile
+import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
 import com.school_of_company.signin.viewmodel.uistate.SaveTokenUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
 import com.school_of_company.signin.viewmodel.uistate.SignUpUiState
@@ -40,6 +44,34 @@ internal class SignInViewModel @Inject constructor(
 
     private val _signUpUiState = MutableStateFlow<SignUpUiState>(SignUpUiState.Loading)
     internal val signUpUiState = _signUpUiState.asStateFlow()
+
+    private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Loading)
+    internal val postFaceUiState = _signUpUiState.asStateFlow()
+
+    internal fun postFace(memberId: Long,context: Context, image: Uri) = viewModelScope.launch {
+        val multipartFile = getMultipartFile(context, image)
+            ?: throw IllegalStateException("이미지 파일 변환 실패")
+        _postFaceUiState.value = PostFaceUiState.Loading
+        authRepository.postFace(memberId, multipartFile)
+            .asResult()
+            .collectLatest {
+                result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _postFaceUiState.value = PostFaceUiState.Loading
+                    }
+                    is Result.Success -> {
+                        _postFaceUiState.value = PostFaceUiState.Success(result.data)
+                    }
+                    is Result.Error -> {
+                        _postFaceUiState.value = PostFaceUiState.Error(result.exception)
+                        throw result.exception
+                    }
+                }
+
+            }
+
+    }
 
     internal fun signUp(body: SignUpRequestModel) = viewModelScope.launch {
         _signUpUiState.value = SignUpUiState.Loading
