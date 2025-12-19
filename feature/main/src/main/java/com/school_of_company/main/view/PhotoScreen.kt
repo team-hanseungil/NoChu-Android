@@ -226,7 +226,7 @@ fun PhotoUploadContent(
                         )
                         Text(
                             text = " 갤러리에서 선택",
-                            style = typography.body1.copy(fontWeight = FontWeight.Medium)
+                            style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
                         )
                     }
 
@@ -235,7 +235,7 @@ fun PhotoUploadContent(
                     Button(
                         onClick = { /* 감정 분석 동작 */ },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colors.purple,
+                            containerColor = colors.subPOPule,
                             contentColor = colors.white
                         ),
                         shape = RoundedCornerShape(10.dp),
@@ -245,7 +245,7 @@ fun PhotoUploadContent(
                     ) {
                         Text(
                             text = "감정 분석하기",
-                            style = typography.body1.copy(fontWeight = FontWeight.Medium)
+                            style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
                         )
                     }
                 }
