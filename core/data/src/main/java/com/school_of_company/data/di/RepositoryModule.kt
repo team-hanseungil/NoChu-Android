@@ -14,6 +14,8 @@ import com.school_of_company.data.repository.member.MemberRepository
 import com.school_of_company.data.repository.member.MemberRepositoryImpl
 import com.school_of_company.data.repository.notice.NoticeRepository
 import com.school_of_company.data.repository.notice.NoticeRepositoryImpl
+import com.school_of_company.data.repository.post.EmotionRepository
+import com.school_of_company.data.repository.post.EmotionRepositoryImpl
 import com.school_of_company.data.repository.post.PostRepository
 import com.school_of_company.data.repository.post.PostRepositoryImpl
 import com.school_of_company.data.repository.report.ReportRepository
@@ -24,6 +26,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -78,4 +81,9 @@ abstract class RepositoryModule {
         alertRepositoryImpl: AlertRepositoryImpl
     ) : AlertRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindEmotionRepository(
+        emotionRepositoryImpl: EmotionRepositoryImpl
+    ): EmotionRepository
 }
