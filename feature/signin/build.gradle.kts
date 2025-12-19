@@ -13,4 +13,9 @@ dependencies {
     implementation(project(":feature:signup"))
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(project(":feature:post"))
+    implementation(libs.coil.kt)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.navigation.compose.android)
+    implementation(libs.androidx.exifinterface)
 }

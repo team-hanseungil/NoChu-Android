@@ -5,9 +5,11 @@ import com.school_of_company.network.dto.auth.requset.LoginRequest
 import com.school_of_company.network.dto.auth.requset.SignUpCertificationNumberSendRequest
 import com.school_of_company.network.dto.auth.requset.SignUpRequest
 import com.school_of_company.network.dto.auth.requset.SmsVerifyCodeRequest
+import com.school_of_company.network.dto.reponse.EmotionResponse
 import com.school_of_company.network.dto.reponse.LoginResponse
 import com.school_of_company.network.util.performApiRequest
 import kotlinx.coroutines.flow.Flow
+import okhttp3.MultipartBody
 import javax.inject.Inject
 
 class AuthDataSourceImpl @Inject constructor(
@@ -16,11 +18,18 @@ class AuthDataSourceImpl @Inject constructor(
     override fun signUp(body: SignUpRequest): Flow<Unit> =
         performApiRequest { authAPI.signUp(body) }
 
-    override fun login(body: LoginRequest): Flow<LoginResponse> =
-        performApiRequest { authAPI.login(body = body)}
+    override fun login(body: SignUpRequest, ): Flow<LoginResponse> =
+        performApiRequest { authAPI.login(body = body,)}
 
-    override fun tokenRefresh(refreshToken: String): Flow<LoginResponse> =
-        performApiRequest { authAPI.tokenRefresh(refreshToken = refreshToken) }
+
+    override fun tokenRefresh(): Flow<LoginResponse> =
+        performApiRequest { authAPI.tokenRefresh() }
+
+
+
+    override fun postFace(memberId: Long,image: MultipartBody.Part,): Flow<EmotionResponse> =
+        performApiRequest { authAPI.postFace(memberId = memberId, file = image) }
+
 
     override fun signLogout(): Flow<Unit> =
         performApiRequest { authAPI.signLogout() }

@@ -42,23 +42,12 @@ class TokenAuthenticator @Inject constructor(
             val authApi = retrofit.create(AuthAPI::class.java)
 
             // 💡 수정된 부분: 토큰 갱신 API 호출 시 refreshToken을 인자로 전달
-            val response = runBlocking {
-                authApi.tokenRefresh(refreshToken = refreshToken)
-            }
 
-            runBlocking {
-                with(dataSource) {
-                    setAccessToken(response.accessToken)
-                    setRefreshToken(response.refreshToken)
-                    setAccessTokenExp(response.accessTokenExpiresIn)
-                    setRefreshTokenExp(response.refreshTokenExpiresIn)
-                }
-            }
-
-            response.accessToken
-        } catch (e: Exception) {
             // 토큰 갱신 실패 시 로그아웃 처리 등을 할 수 있습니다.
             null
+        } catch (e: Exception) {
+            null
         }
+
     }
 }

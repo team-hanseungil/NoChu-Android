@@ -13,7 +13,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 
-internal fun getMultipartFile(
+fun getMultipartFile(
     context: Context,
     uri: Uri
 ): MultipartBody.Part? {

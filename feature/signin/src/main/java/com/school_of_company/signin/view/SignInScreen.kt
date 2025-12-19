@@ -109,7 +109,7 @@ internal fun SignInRoute(
         onSignUpClick = onSignUpClick,
         signInCallBack = {
             // deviceId(UUID)를 인자로 넘겨서 login 함수 호출
-            viewModel.login(deviceId)
+            viewModel.login()
         }
     )
 }

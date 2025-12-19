@@ -2,6 +2,7 @@ package com.school_of_company.network.dto.auth.requset
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import retrofit2.http.Multipart
 
 @JsonClass(generateAdapter = true)
 data class LoginRequest(
@@ -10,4 +11,9 @@ data class LoginRequest(
     @Json(name = "deviceToken") val deviceToken: String,
     @Json(name = "deviceId") val deviceId: String,
     @Json(name = "osType") val osType: String = "ANDROID"
+)
+
+@JsonClass(generateAdapter = true)
+data class image(
+    @Json(name = "image") val image: Multipart
 )
