@@ -49,7 +49,9 @@ import com.school_of_company.profile.navigation.otherPersonProfileScreen
 import com.school_of_company.profile.navigation.otherReviewScreen
 import com.school_of_company.signin.navigation.SignUpRoute
 import com.school_of_company.signin.navigation.StartRoute
+import com.school_of_company.signin.navigation.navigateToPhotoFace
 import com.school_of_company.signin.navigation.navigateToSignIn
+import com.school_of_company.signin.navigation.photoFaceScreen
 import com.school_of_company.signin.navigation.signInScreen
 import com.school_of_company.signin.navigation.signUpScreen // signUpScreen 사용을 위해 추가
 
@@ -84,7 +86,9 @@ fun GwangsanNavHost(
     ) {
         signInScreen(
             onBackClick = { navController.popBackStack() },
-            onMainClick = { navController.navigateToHomeAndClearLogin() },
+            onMainClick = {id ->
+                navController.navigateToPhotoFace(memberId = id)
+            },
             onErrorToast = onErrorToast,
             onSignUpClick = { navController.navigate(SignUpRoute) }
         )
@@ -95,6 +99,12 @@ fun GwangsanNavHost(
             onSignInClick = { navController.popBackStack() },
             onErrorToast = onErrorToast
         )
+
+        photoFaceScreen(
+            onBackClick = { navController.popBackStack() }
+        )
+
+
 
 
         mainScreen(

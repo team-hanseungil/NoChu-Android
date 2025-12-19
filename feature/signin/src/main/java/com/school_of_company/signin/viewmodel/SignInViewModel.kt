@@ -32,7 +32,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-internal class SignInViewModel @Inject constructor(
+class SignInViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val savedStateHandle: SavedStateHandle,
     private val localRepository: LocalRepository
@@ -55,32 +55,39 @@ internal class SignInViewModel @Inject constructor(
 
     // ========================= 로그인 로직 ==========================
 
-    private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Loading)
-    internal val postFaceUiState = _signUpUiState.asStateFlow()
+    private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Idle)
+    val postFaceUiState = _postFaceUiState.asStateFlow()
 
-    internal fun postFace(memberId: Long,context: Context, image: Uri) = viewModelScope.launch {
+    internal fun postFace(memberId: Long, context: Context, image: Uri) = viewModelScope.launch {
         val multipartFile = getMultipartFile(context, image)
-            ?: throw IllegalStateException("이미지 파일 변환 실패")
-        _postFaceUiState.value = PostFaceUiState.Loading
+            ?: run {
+                _postFaceUiState.value = PostFaceUiState.Error(
+                    IllegalStateException("이미지 파일 변환 실패")
+                )
+                return@launch
+            }
+
         authRepository.postFace(memberId, multipartFile)
             .asResult()
-            .collectLatest {
-                    result ->
+            .collectLatest { result ->
                 when (result) {
                     is Result.Loading -> {
                         _postFaceUiState.value = PostFaceUiState.Loading
                     }
+
                     is Result.Success -> {
                         _postFaceUiState.value = PostFaceUiState.Success(result.data)
                     }
+
                     is Result.Error -> {
                         _postFaceUiState.value = PostFaceUiState.Error(result.exception)
-                        throw result.exception
+                        // ✅ 여기서 throw 하면 앱 죽을 수 있음 -> 제거
                     }
                 }
-
             }
-
+    }
+    fun resetPostFaceState() {
+        _postFaceUiState.value = PostFaceUiState.Idle
     }
 
     internal fun login() = viewModelScope.launch {
@@ -89,12 +96,7 @@ internal class SignInViewModel @Inject constructor(
         val nicknameValue = id.value
         val passwordValue = password.value
 
-        val deviceToken = localRepository.getDeviceToken()
 
-        if (!isValidId(nicknameValue)) {
-            _signInUiState.value = SignInUiState.IdNotValid
-            return@launch
-        }
 
         val body = SignUpRequestModel(
             nickname = nicknameValue,
@@ -114,7 +116,8 @@ internal class SignInViewModel @Inject constructor(
 
                         Log.d("LoginViewModel", "Login success, saving token...")
                         Log.d("LoginViewModel", "Token data: ${result.data}")
-                        _signInUiState.value = SignInUiState.Success
+                        _signInUiState.value = SignInUiState.Success(result.data.memberId)
+
                         authRepository.saveToken(result.data)
                     }
                     is Result.Error -> {

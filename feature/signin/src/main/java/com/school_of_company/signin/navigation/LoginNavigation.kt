@@ -5,12 +5,17 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.school_of_company.signin.view.SignInRoute
-import com.school_of_company.signup.view.SignUpScreen // 'SignUpScreen' import 유효
+import com.school_of_company.signup.view.SignUpScreen
+import com.school_of_company.nochumain.PhotoUploadRoute
 
-// 네비게이션 경로 상수
 const val StartRoute = "Start_route"
 const val SignInRoute = "Sign_in_route"
 const val SignUpRoute = "Sign_up_route"
+
+// ✅ 추가
+const val PhotoFaceRoute = "Photo_face_route"
+private const val MEMBER_ID_ARG = "memberId"
+private const val PhotoFaceRouteWithArg = "$PhotoFaceRoute/{$MEMBER_ID_ARG}"
 
 fun NavController.navigateToStart(navOptions: NavOptions? = null) {
     this.navigate(StartRoute, navOptions)
@@ -26,12 +31,12 @@ fun NavGraphBuilder.startScreen(
 }
 
 fun NavController.navigateToSignIn(navOptions: NavOptions? = null) {
-    this.navigate( SignInRoute, navOptions)
+    this.navigate(SignInRoute, navOptions)
 }
 
 fun NavGraphBuilder.signInScreen(
     onBackClick: () -> Unit,
-    onMainClick: () -> Unit,
+    onMainClick: (Long) -> Unit,
     onErrorToast: (throwable: Throwable?, message: Int?) -> Unit,
     onSignUpClick: () -> Unit
 ) {
@@ -51,7 +56,7 @@ fun NavController.navigateToSignUp(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.signUpScreen(
     onBackClick: () -> Unit,
-    onSignInClick: () -> Unit, // 로그인 페이지로 이동하는 콜백
+    onSignInClick: () -> Unit,
     onErrorToast: (throwable: Throwable?, message: Int?) -> Unit
 ) {
     composable(route = SignUpRoute) {
@@ -59,6 +64,32 @@ fun NavGraphBuilder.signUpScreen(
             onBackClick = onBackClick,
             onSignInClick = onSignInClick,
             onErrorToast = onErrorToast
+        )
+    }
+}
+
+// ======================================================
+// ✅ PhotoFace (PhotoUpload) 네비게이션 추가
+// ======================================================
+
+fun NavController.navigateToPhotoFace(
+    memberId: Long,
+    navOptions: NavOptions? = null
+) {
+    this.navigate("$PhotoFaceRoute/$memberId", navOptions)
+}
+
+fun NavGraphBuilder.photoFaceScreen(
+    onBackClick: () -> Unit,
+) {
+    composable(route = PhotoFaceRouteWithArg) { backStackEntry ->
+        val memberId = backStackEntry.arguments
+            ?.getString(MEMBER_ID_ARG)
+            ?.toLongOrNull()
+            ?: return@composable
+
+        PhotoUploadRoute(
+            memberId = memberId
         )
     }
 }
