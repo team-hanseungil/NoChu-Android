@@ -47,9 +47,9 @@ import com.school_of_company.ui.previews.GwangsanPreviews
 @Composable
 internal fun SignInRoute(
     onBackClick: () -> Unit,
-    onMainClick: () -> Unit,
+    onMainClick: (Long) -> Unit,                 // ✅ 로그인 성공 시 PhotoFace로 보내는 콜백( memberId 전달 )
     onErrorToast: (throwable: Throwable?, message: Int?) -> Unit,
-    onSignUpClick: () -> Unit, // 네비게이션 콜백 추가
+    onSignUpClick: () -> Unit,
     viewModel: SignInViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -70,7 +70,9 @@ internal fun SignInRoute(
             }
 
             is SignInUiState.Success -> {
-                onMainClick()
+                // ✅ 여기서 "서버가 준 memberId"를 꺼내서 넘겨야 함
+                val memberId = (signInUiState as SignInUiState.Success).memberId
+                onMainClick(memberId) // -> navController.navigateToPhotoFace(memberId)
                 makeToast(context, "로그인 성공")
             }
 
@@ -93,7 +95,8 @@ internal fun SignInRoute(
                 val e = (signInUiState as SignInUiState.Error).exception
                 onErrorToast(e, R.string.error_login)
             }
-            else -> { /* Idle 등 기타 상태 */ }
+
+            else -> Unit
         }
     }
 
@@ -108,7 +111,7 @@ internal fun SignInRoute(
         onMainClick = onMainClick,
         onSignUpClick = onSignUpClick,
         signInCallBack = {
-            // deviceId(UUID)를 인자로 넘겨서 login 함수 호출
+            // deviceId(UUID)를 쓰려면 login()에 인자로 넘기도록 ViewModel 수정
             viewModel.login()
         }
     )
@@ -121,7 +124,7 @@ private fun SignInScreen(
     onSignUpClick: () -> Unit,
     id: String,
     onBackClick: () -> Unit,
-    onMainClick: () -> Unit,
+    onMainClick: (Long) -> Unit,
     password: String,
     onIdChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -155,9 +158,18 @@ private fun SignInScreen(
                 ) {
                     Text(text = "\uD83D\uDE0A", style = typography.titleMedium2)
                     Spacer(Modifier.height(12.dp))
-                    Text(text = "로그인", style = typography.titleMedium2, color = colors.black, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "로그인",
+                        style = typography.titleMedium2,
+                        color = colors.black,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(Modifier.height(10.dp))
-                    Text(text = "감정 분석 앱에 오신 것을 환영합니다", style = typography.label, color = colors.black.copy(alpha = 0.7f))
+                    Text(
+                        text = "감정 분석 앱에 오신 것을 환영합니다",
+                        style = typography.label,
+                        color = colors.black.copy(alpha = 0.7f)
+                    )
                     Spacer(Modifier.height(28.dp))
 
                     Column(
@@ -165,14 +177,26 @@ private fun SignInScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         GwangSanTextField(
-                            value = id, label = "이름", placeHolder = "이름을 입력하세요", onTextChange = onIdChange,
-                            isError = idIsError, errorText = "유효하지 않은 이름입니다", modifier = Modifier.fillMaxWidth(), singleLine = true
+                            value = id,
+                            label = "이름",
+                            placeHolder = "이름을 입력하세요",
+                            onTextChange = onIdChange,
+                            isError = idIsError,
+                            errorText = "유효하지 않은 이름입니다",
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
                         )
 
                         GwangSanTextField(
-                            value = password, label = "비밀번호", placeHolder = "비밀번호를 입력하세요", onTextChange = onPasswordChange,
-                            isError = passwordIsError, errorText = "유효하지 않은 비밀번호입니다",
-                            visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth(), singleLine = true
+                            value = password,
+                            label = "비밀번호",
+                            placeHolder = "비밀번호를 입력하세요",
+                            onTextChange = onPasswordChange,
+                            isError = passwordIsError,
+                            errorText = "유효하지 않은 비밀번호입니다",
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
                         )
                     }
 
@@ -180,29 +204,33 @@ private fun SignInScreen(
 
                     GwangSanStateButton(
                         text = "로그인",
-                        state = if (id.isNotBlank() && password.isNotBlank()) ButtonState.Enable else ButtonState.Disable,
+                        state = if (id.isNotBlank() && password.isNotBlank())
+                            ButtonState.Enable
+                        else
+                            ButtonState.Disable,
                         onClick = signInCallBack,
-                        modifier = Modifier.fillMaxWidth().height(52.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
                     )
 
                     Spacer(Modifier.height(18.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "계정이 없으신가요? ", style = typography.label, color = colors.black.copy(alpha = 0.7f))
-                        Text(text = "회원가입", style = typography.label, color = colors.subYellow500, modifier = Modifier.GwangSanClickable(onClick = onSignUpClick))
+                        Text(
+                            text = "계정이 없으신가요? ",
+                            style = typography.label,
+                            color = colors.black.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text = "회원가입",
+                            style = typography.label,
+                            color = colors.subYellow500,
+                            modifier = Modifier.GwangSanClickable(onClick = onSignUpClick)
+                        )
                     }
                 }
             }
         }
     }
-}
-
-@GwangsanPreviews
-@Composable
-private fun SignInScreenPreview_Error() {
-    SignInScreen(
-        onBackClick = {}, signInCallBack = {}, onSignUpClick = {},
-        id = "non", password = "1234", onIdChange = {}, onPasswordChange = {},
-        idIsError = true, passwordIsError = true, onMainClick = {},
-    )
 }
