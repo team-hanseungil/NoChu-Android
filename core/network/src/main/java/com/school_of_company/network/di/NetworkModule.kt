@@ -2,7 +2,6 @@ package com.school_of_company.network.di
 
 import android.content.Context
 import android.util.Log
-import com.school_of_company.network.BuildConfig
 import com.school_of_company.network.api.AlertAPI
 import com.school_of_company.network.api.AuthAPI
 import com.school_of_company.network.api.ChatAPI
@@ -139,4 +138,3 @@ object NetworkModule {
     fun provideEmotionAPI(retrofit: Retrofit): EmotionAPI =
         retrofit.create(EmotionAPI::class.java)
 }
-

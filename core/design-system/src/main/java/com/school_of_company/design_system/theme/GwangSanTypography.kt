@@ -93,6 +93,14 @@ object GwangSanTypography {
     )
 
     @Stable
+    val capt = TextStyle(
+        fontFamily = pretendard,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 12.sp,
+        lineHeight = 16.8.sp
+    )
+
+    @Stable
     val caption = TextStyle(
         fontFamily = pretendard,
         fontWeight = FontWeight.Normal,

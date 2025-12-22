@@ -1,4 +1,4 @@
-package com.school_of_company.data.repository.post // post 패키지 경로 사용
+package com.school_of_company.data.repository.post
 
 import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
 import kotlinx.coroutines.flow.Flow

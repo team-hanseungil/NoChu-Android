@@ -22,6 +22,8 @@ import com.school_of_company.data.repository.report.ReportRepository
 import com.school_of_company.data.repository.report.ReportRepositoryImpl
 import com.school_of_company.data.repository.review.ReviewRepository
 import com.school_of_company.data.repository.review.ReviewRepositoryImpl
+import com.school_of_company.network.datasource.post.EmotionDataSource
+import com.school_of_company.network.datasource.post.EmotionDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -86,4 +88,10 @@ abstract class RepositoryModule {
     abstract fun bindEmotionRepository(
         emotionRepositoryImpl: EmotionRepositoryImpl
     ): EmotionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindEmotionDataSource(
+        emotionDataSourceImpl: EmotionDataSourceImpl
+    ): EmotionDataSource
 }

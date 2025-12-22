@@ -11,6 +11,7 @@ data class EmotionRecordResponse(
     @Json(name = "confidence") val confidence: Int // 0~100
 )
 
+// `EmotionHistoryResponse.kt` 파일에 포함될 수도 있음
 @JsonClass(generateAdapter = true)
 data class EmotionHistoryResponse(
     @Json(name = "totalRecords") val totalRecords: Int,

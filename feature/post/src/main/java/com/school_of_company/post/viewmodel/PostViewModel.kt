@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.school_of_company.data.repository.image.ImageRepository
-import com.school_of_company.data.repository.post.EmotionRepository // 기존에 주입은 되어 있었음
+import com.school_of_company.data.repository.post.EmotionRepository
 import com.school_of_company.model.enum.Mode
 import com.school_of_company.model.enum.Type
 import com.school_of_company.network.errorHandling
@@ -30,13 +30,13 @@ import com.school_of_company.result.Result
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
-
+import java.lang.IllegalArgumentException
 
 @HiltViewModel
 class PostViewModel @Inject constructor(
     private val postRepository: PostRepository,
     private val imageRepository: ImageRepository,
-    private val emotionRepository: EmotionRepository,
+    private val emotionRepository: EmotionRepository, // EmotionRepository 주입
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     companion object {
@@ -75,6 +75,7 @@ class PostViewModel @Inject constructor(
         MutableStateFlow<ImageUpLoadUiState>(ImageUpLoadUiState.Loading)
     internal val imageUpLoadUiState = _imageUpLoadUiState.asStateFlow()
 
+    // 감정 기록 UI 상태
     private val _emotionHistoryUiState =
         MutableStateFlow<HistoryUiState>(HistoryUiState.Loading)
     val emotionHistoryUiState: StateFlow<HistoryUiState> = _emotionHistoryUiState.asStateFlow()
@@ -92,6 +93,9 @@ class PostViewModel @Inject constructor(
     private val _editPostId = MutableStateFlow<Long?>(null)
     val editPostId: StateFlow<Long?> = _editPostId.asStateFlow()
 
+    /**
+     * 감정 기록 데이터를 로드하고 UI 상태를 업데이트합니다.
+     */
     internal fun loadEmotionHistory(memberId: Long) = viewModelScope.launch {
         emotionRepository.getEmotionHistory(memberId)
             .onStart { _emotionHistoryUiState.value = HistoryUiState.Loading }
