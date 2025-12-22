@@ -5,6 +5,7 @@ import com.school_of_company.network.dto.post.request.TransactionCompleteRequest
 import com.school_of_company.network.dto.post.response.AllPostDto
 import com.school_of_company.network.dto.post.response.PostDto
 import com.school_of_company.network.dto.post.response.PostModifyResponse
+import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -63,10 +64,10 @@ interface PostAPI {
         @Path("product_id") postId: Long
     )
 
-    @GET("/api/post/member/{member_id}")
-    suspend fun otherPostInformation(
-        @Path("member_id") memberId: Long,
-        @Query("type") type: String? = null,
-        @Query("mode") mode: String? = null,
-    ) : List<AllPostDto>
+    @GET("/api/emotions/{memberId}")
+    suspend fun getEmotionHistoryByMemberId(
+        @Path("memberId") memberId: Long
+    ): EmotionHistoryResponse
+
+    fun otherPostInformation(type: String?, mode: String?, memberId: Long): List<AllPostDto>
 }
