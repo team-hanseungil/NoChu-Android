@@ -3,11 +3,13 @@ package com.school_of_company.nochumain
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,20 +38,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.design_system.R
+import com.school_of_company.design_system.theme.GwangSanTheme
+import com.school_of_company.design_system.theme.GwangSanTypography
 import com.school_of_company.design_system.theme.color.GwangSanColor
+import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
+import kotlin.math.roundToInt
 
+// ======================================================
+// Route
+// ======================================================
 @Composable
 fun PhotoUploadRoute(
     memberId: Long,
@@ -62,11 +72,13 @@ fun PhotoUploadRoute(
 
     val uiState by viewModel.postFaceUiState.collectAsState()
 
-
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             selectedImageUri = uri
-            if (uri != null) viewModel.resetPostFaceState()
+            if (uri != null) {
+                viewModel.resetPostFaceState()
+                selectedIndex = 1
+            }
         }
 
     Scaffold(
@@ -77,25 +89,49 @@ fun PhotoUploadRoute(
             )
         }
     ) { paddingValues ->
-        PhotoUploadContent(
-            modifier = Modifier.padding(paddingValues),
-            selectedImageUri = selectedImageUri,
-            uiState = uiState,
-            onPickImage = { pickImageLauncher.launch("image/*") },
-            onPostClick = {
-                val uri = selectedImageUri ?: return@PhotoUploadContent
-                viewModel.postFace(
-                    memberId = memberId,
-                    context = context,
-                    image = uri
+        when (selectedIndex) {
+            1 -> {
+                PhotoUploadContent(
+                    modifier = Modifier.padding(paddingValues),
+                    selectedImageUri = selectedImageUri,
+                    uiState = uiState,
+                    onPickImage = { pickImageLauncher.launch("image/*") },
+                    onPostClick = {
+                        val uri = selectedImageUri ?: return@PhotoUploadContent
+                        viewModel.postFace(
+                            memberId = memberId,
+                            context = context,
+                            image = uri
+                        )
+                        selectedIndex = 2
+                    }
                 )
             }
-        )
+
+            2 -> {
+                AnalysisContent(
+                    modifier = Modifier.padding(paddingValues),
+                    selectedImageUri = selectedImageUri,
+                    uiState = uiState,
+                    onGoPickAgain = { selectedIndex = 1 },
+                    onMusicClick = { selectedIndex = 3 }
+                )
+            }
+
+            else -> {
+                Box(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxSize()
+                        .background(Color.White)
+                )
+            }
+        }
     }
 }
 
 // ======================================================
-// Navigation Bar (너가 올린 코드 그대로)
+// Navigation Bar
 // ======================================================
 @Composable
 fun RowScope.NoChuNavigationBarItem(
@@ -202,7 +238,7 @@ private fun NavigationContent(
 }
 
 // ======================================================
-// Content (UI + 콜백)
+// Upload Screen
 // ======================================================
 @Composable
 fun PhotoUploadContent(
@@ -219,7 +255,6 @@ fun PhotoUploadContent(
                 .background(colors.white)
                 .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-
             Text(
                 text = "사진 업로드",
                 style = typography.titleMedium2,
@@ -240,9 +275,7 @@ fun PhotoUploadContent(
                 color = colors.white,
                 shadowElevation = 4.dp
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp)
-                ) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -326,7 +359,7 @@ fun PhotoUploadContent(
                             .height(56.dp)
                     ) {
                         Text(
-                            text =  "감정 분석하기",
+                            text = "감정 분석하기",
                             style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
                         )
                     }
@@ -359,13 +392,253 @@ fun PhotoUploadContent(
 }
 
 // ======================================================
-// Preview (Route는 memberId 필요해서 Screen 느낌으로만)
+// Analysis Screen
+// ======================================================
+private data class EmotionItem(
+    val label: String,
+    val percent: Int
+)
+
+@Composable
+fun AnalysisContent(
+    modifier: Modifier = Modifier,
+    selectedImageUri: Uri?,
+    uiState: PostFaceUiState,
+    onGoPickAgain: () -> Unit,
+    onMusicClick: () -> Unit
+) {
+    GwangSanTheme { colors, typography ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(colors.white)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
+        ) {
+            Text(
+                text = "분석",
+                style = typography.titleMedium2,
+                color = colors.black
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                color = colors.white,
+                shadowElevation = 4.dp
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(1.dp, colors.gray200, RoundedCornerShape(8.dp))
+                            .background(colors.gray100),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (selectedImageUri == null) {
+                            Text(
+                                text = "선택된 이미지가 없습니다",
+                                style = typography.body2,
+                                color = colors.gray500
+                            )
+                        } else {
+                            AsyncImage(
+                                model = selectedImageUri,
+                                contentDescription = "선택된 이미지",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    when (uiState) {
+                        is PostFaceUiState.Loading -> {
+                            Text(
+                                text = "분석 중...",
+                                style = typography.body2,
+                                color = colors.gray600
+                            )
+                        }
+
+                        is PostFaceUiState.Error -> {
+                            Text(
+                                text = "분석 실패: ${uiState.exception.message ?: "알 수 없는 오류"}",
+                                style = typography.body2,
+                                color = colors.error
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Button(
+                                onClick = onGoPickAgain,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colors.white,
+                                    contentColor = colors.gray800
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(52.dp)
+                                    .border(1.dp, colors.gray200, RoundedCornerShape(10.dp)),
+                            ) {
+                                Text("사진 다시 선택하기", style = typography.body1)
+                            }
+                        }
+
+                        is PostFaceUiState.Success -> {
+                            val data = uiState.data  // EmotionResponse
+                            val emotionItems = data.toEmotionItems()
+
+                            Text(
+                                text = "감정 분석",
+                                style = typography.titleSmall,
+                                color = colors.black
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            emotionItems.forEach { item ->
+                                EmotionRow(
+                                    label = item.label,
+                                    percent = item.percent,
+                                    fillColor = colors.purple,
+                                    trackColor = colors.gray100,
+                                    typography = typography
+                                )
+                                Spacer(modifier = Modifier.height(14.dp))
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                color = colors.white,
+                                shadowElevation = 0.dp,
+                                border = BorderStroke(1.dp, colors.gray200)
+                            ) {
+                                Column(modifier = Modifier.padding(18.dp)) {
+                                    Text(
+                                        text = "AI 코멘트",
+                                        style = typography.titleSmall,
+                                        color = colors.black
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+
+                                    Text(
+                                        text = data.comment,
+                                        style = typography.body2,
+                                        color = colors.gray700
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                onClick = onMusicClick,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colors.subPOPule,
+                                    contentColor = colors.white
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.music_icon),
+                                    contentDescription = "음악",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "  음악 추천받기",
+                                    style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
+                                )
+                            }
+                        }
+
+                        else -> Unit
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmotionRow(
+    label: String,
+    percent: Int,
+    fillColor: Color,
+    trackColor: Color,
+    typography: GwangSanTypography
+) {
+    val p = percent.coerceIn(0, 100)
+    val progress = p / 100f
+
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = label, style = typography.body2)
+            Text(
+                text = "${p}%",
+                style = typography.body2,
+                textAlign = TextAlign.End
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(trackColor)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(progress)
+                    .height(10.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(fillColor)
+            )
+        }
+    }
+}
+
+// ======================================================
+// EmotionResponse -> EmotionRow Data
+// ======================================================
+private fun EmotionResponseModel.toEmotionItems(): List<EmotionItem> {
+    fun pct(v: Double): Int = (v * 100).roundToInt().coerceIn(0, 100)
+
+    return listOf(
+        EmotionItem("행복", pct(emotions.happy)),
+        EmotionItem("놀람", pct(emotions.surprise)),
+        EmotionItem("분노", pct(emotions.anger)),
+        EmotionItem("불안", pct(emotions.anxiety)),
+        EmotionItem("상처", pct(emotions.hurt)),
+        EmotionItem("슬픔", pct(emotions.sad)),
+    ).sortedByDescending { it.percent }
+}
+
+// ======================================================
+// Preview
 // ======================================================
 @Preview(showBackground = true)
 @Composable
 fun FullPhotoUploadScreenPreview() {
     GwangSanTheme { _, _ ->
-        // Preview에서는 hiltViewModel() 안되니까 Content만 프리뷰
         PhotoUploadContent(
             selectedImageUri = null,
             uiState = PostFaceUiState.Loading,
