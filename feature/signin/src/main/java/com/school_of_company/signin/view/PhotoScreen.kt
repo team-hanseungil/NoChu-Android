@@ -27,9 +27,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,25 +43,43 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.design_system.R
 import com.school_of_company.design_system.theme.color.GwangSanColor
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
+import com.school_of_company.presentation.history.HistoryScreen
+
+// ------------------------------------------------------
+// 1. Navigation Route 상수 정의 (변경 없음)
+// ------------------------------------------------------
+private const val HomeRoute = "home_route"
+private const val PhotoRoute = "photo_route" // 현재 화면
+private const val AnalysisRoute = "analysis_route"
+private const val MusicRoute = "music_route"
+private const val HistoryRoute = "history_route" // 기록 화면 라우트
 
 @Composable
-fun PhotoUploadRoute(
+fun PhotoScreen( // ⬅️ 컴포저블 이름 변경
     memberId: Long,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
+    // ------------------------------------------------------
+    // 2. NavController와 현재 경로 추적 (Mock Navigation을 위해)
+    // ------------------------------------------------------
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     val context = LocalContext.current
 
-    var selectedIndex by remember { mutableIntStateOf(1) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-
     val uiState by viewModel.postFaceUiState.collectAsState()
-
 
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -69,33 +87,97 @@ fun PhotoUploadRoute(
             if (uri != null) viewModel.resetPostFaceState()
         }
 
+    // 초기 시작 화면을 PhotoRoute로 설정
+    LaunchedEffect(Unit) {
+        if (currentRoute == null) {
+            navController.navigate(PhotoRoute)
+        }
+    }
+
+
     Scaffold(
         bottomBar = {
+            // ------------------------------------------------------
+            // 3. NavigationContent에 NavController 전달 및 Route 기반 selectedState 계산
+            // ------------------------------------------------------
             NavigationContent(
-                selectedIndex = selectedIndex,
-                onItemSelected = { index -> selectedIndex = index }
+                currentRoute = currentRoute, // 현재 Route 전달
+                onItemSelected = { route ->
+                    // 클릭 시 해당 Route로 Navigation 수행
+                    if (currentRoute != route) {
+                        navController.navigate(route) {
+                            // 바텀바 Navigation 표준 설정
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
             )
         }
     ) { paddingValues ->
-        PhotoUploadContent(
-            modifier = Modifier.padding(paddingValues),
-            selectedImageUri = selectedImageUri,
-            uiState = uiState,
-            onPickImage = { pickImageLauncher.launch("image/*") },
-            onPostClick = {
-                val uri = selectedImageUri ?: return@PhotoUploadContent
-                viewModel.postFace(
-                    memberId = memberId,
-                    context = context,
-                    image = uri
+        // ------------------------------------------------------
+        // 4. NavHost를 사용하여 화면 전환 구현 (임시)
+        // ------------------------------------------------------
+        NavHost(
+            navController = navController,
+            startDestination = PhotoRoute, // 임시 시작 지점
+            modifier = Modifier.padding(paddingValues).fillMaxSize()
+        ) {
+            // PhotoScreen (현재 화면)
+            composable(PhotoRoute) {
+                PhotoUploadContent(
+                    modifier = Modifier.fillMaxSize(),
+                    selectedImageUri = selectedImageUri,
+                    uiState = uiState,
+                    onPickImage = { pickImageLauncher.launch("image/*") },
+                    onPostClick = {
+                        val uri = selectedImageUri ?: return@PhotoUploadContent
+                        viewModel.postFace(
+                            memberId = memberId,
+                            context = context,
+                            image = uri
+                        )
+                    }
                 )
             }
-        )
+            // 나머지 탭의 임시 화면들
+            composable(HomeRoute) { TempScreen(name = "홈") }
+            composable(AnalysisRoute) { TempScreen(name = "분석") }
+            composable(MusicRoute) { TempScreen(name = "음악") }
+
+            // 기록 탭에 HistoryScreen 연결
+            composable(HistoryRoute) {
+                HistoryScreen()
+            }
+        }
+    }
+}
+
+// ------------------------------------------------------
+// 임시 화면 정의 (변경 없음)
+// ------------------------------------------------------
+@Composable
+fun TempScreen(name: String) {
+    GwangSanTheme { colors, typography ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colors.gray100),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "$name 화면 (임시)",
+                style = typography.titleLarge,
+                color = colors.black
+            )
+        }
     }
 }
 
 // ======================================================
-// Navigation Bar (너가 올린 코드 그대로)
+// Navigation Bar Components (NoChuNavigationBar)
+// (변경 없음)
 // ======================================================
 @Composable
 fun RowScope.NoChuNavigationBarItem(
@@ -151,11 +233,10 @@ fun NoChuNavigationBar(
 
 @Composable
 private fun NavigationContent(
-    selectedIndex: Int,
-    onItemSelected: (Int) -> Unit
+    currentRoute: String?,
+    onItemSelected: (String) -> Unit
 ) {
     val items = listOf("홈", "사진", "분석", "음악", "기록")
-
     val icons = listOf(
         R.drawable.home,
         R.drawable.camera_icon,
@@ -163,11 +244,17 @@ private fun NavigationContent(
         R.drawable.music_icon,
         R.drawable.history_icon,
     )
+    // Route와 아이템을 매핑합니다.
+    val routes = listOf(
+        HomeRoute, PhotoRoute, AnalysisRoute, MusicRoute, HistoryRoute
+    )
 
     GwangSanTheme { colors, typography ->
         NoChuNavigationBar {
             items.forEachIndexed { index, item ->
-                val isSelected = index == selectedIndex
+                val route = routes[index]
+                // 현재 Route와 일치하는지 확인하여 선택 상태 결정
+                val isSelected = currentRoute == route
                 val iconRes = icons[index]
 
                 NoChuNavigationBarItem(
@@ -194,15 +281,18 @@ private fun NavigationContent(
                         )
                     },
                     selected = isSelected,
-                    onClick = { onItemSelected(index) },
+                    // 클릭 시 해당 Route를 상위로 전달합니다.
+                    onClick = { onItemSelected(route) },
                 )
             }
         }
     }
 }
 
+
 // ======================================================
 // Content (UI + 콜백)
+// (변경 없음)
 // ======================================================
 @Composable
 fun PhotoUploadContent(
@@ -359,16 +449,16 @@ fun PhotoUploadContent(
 }
 
 // ======================================================
-// Preview (Route는 memberId 필요해서 Screen 느낌으로만)
+// Preview
+// (변경 없음)
 // ======================================================
 @Preview(showBackground = true)
 @Composable
 fun FullPhotoUploadScreenPreview() {
     GwangSanTheme { _, _ ->
-        // Preview에서는 hiltViewModel() 안되니까 Content만 프리뷰
         PhotoUploadContent(
             selectedImageUri = null,
-            uiState = PostFaceUiState.Loading,
+            uiState = PostFaceUiState.Idle,
             onPickImage = {},
             onPostClick = {}
         )
