@@ -2,10 +2,10 @@ package com.school_of_company.network.di
 
 import android.content.Context
 import android.util.Log
-import com.school_of_company.network.BuildConfig
 import com.school_of_company.network.api.AlertAPI
 import com.school_of_company.network.api.AuthAPI
 import com.school_of_company.network.api.ChatAPI
+import com.school_of_company.network.api.EmotionAPI
 import com.school_of_company.network.api.ImageAPI
 import com.school_of_company.network.api.MemberAPI
 import com.school_of_company.network.api.NoticeAPI
@@ -132,5 +132,9 @@ object NetworkModule {
     @Singleton
     fun provideAlertAPI(retrofit: Retrofit): AlertAPI =
         retrofit.create(AlertAPI::class.java)
-}
 
+    @Provides
+    @Singleton
+    fun provideEmotionAPI(retrofit: Retrofit): EmotionAPI =
+        retrofit.create(EmotionAPI::class.java)
+}

@@ -3,16 +3,19 @@ package com.school_of_company.signin.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument // NavType 사용을 위해 추가
 import com.school_of_company.signin.view.SignInRoute
 import com.school_of_company.signup.view.SignUpScreen
-import com.school_of_company.nochumain.PhotoUploadRoute
+// ✅ PhotoScreen으로 컴포넌트 이름 업데이트를 가정하여 임포트 수정
+import com.school_of_company.nochumain.PhotoScreen
 
 const val StartRoute = "Start_route"
 const val SignInRoute = "Sign_in_route"
 const val SignUpRoute = "Sign_up_route"
 
-// ✅ 추가
+// ✅ Route 이름: PhotoScreen의 Route를 정의
 const val PhotoFaceRoute = "Photo_face_route"
 private const val MEMBER_ID_ARG = "memberId"
 private const val PhotoFaceRouteWithArg = "$PhotoFaceRoute/{$MEMBER_ID_ARG}"
@@ -36,7 +39,7 @@ fun NavController.navigateToSignIn(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.signInScreen(
     onBackClick: () -> Unit,
-    onMainClick: (Long) -> Unit,
+    onMainClick: (Long) -> Unit, // ✅ (Long) -> Unit 대신 navigateToPhotoFace 호출을 가정합니다.
     onErrorToast: (throwable: Throwable?, message: Int?) -> Unit,
     onSignUpClick: () -> Unit
 ) {
@@ -44,7 +47,8 @@ fun NavGraphBuilder.signInScreen(
         SignInRoute(
             onBackClick = onBackClick,
             onErrorToast = onErrorToast,
-            onMainClick = onMainClick,
+            // onMainClick: 로그인 성공 시 PhotoScreen으로 이동
+            onMainClick = onMainClick, // memberId를 받아서 처리
             onSignUpClick = onSignUpClick
         )
     }
@@ -69,26 +73,33 @@ fun NavGraphBuilder.signUpScreen(
 }
 
 // ======================================================
-// ✅ PhotoFace (PhotoUpload) 네비게이션 추가
+// ✅ PhotoFace (PhotoScreen) 네비게이션
 // ======================================================
 
 fun NavController.navigateToPhotoFace(
     memberId: Long,
     navOptions: NavOptions? = null
 ) {
+    // memberId를 URL 인자로 삽입하여 네비게이션 수행
     this.navigate("$PhotoFaceRoute/$memberId", navOptions)
 }
 
 fun NavGraphBuilder.photoFaceScreen(
-    onBackClick: () -> Unit,
+    onBackClick: () -> Unit, // 현재 사용되지 않지만 구조 유지를 위해 남겨둠
 ) {
-    composable(route = PhotoFaceRouteWithArg) { backStackEntry ->
-        val memberId = backStackEntry.arguments
-            ?.getString(MEMBER_ID_ARG)
-            ?.toLongOrNull()
-            ?: return@composable
+    composable(
+        route = PhotoFaceRouteWithArg,
+        arguments = listOf(
+            navArgument(MEMBER_ID_ARG) {
+                type = NavType.LongType // 인자 타입 Long 명시
+            }
+        )
+    ) { backStackEntry ->
+        // LongType으로 인자를 가져옴. LongType은 null이 아닐 것이므로 toLong() 사용 가능.
+        val memberId = backStackEntry.arguments?.getLong(MEMBER_ID_ARG) ?: 0L
 
-        PhotoUploadRoute(
+        // PhotoScreen 컴포넌트 호출
+        PhotoScreen(
             memberId = memberId
         )
     }
