@@ -2,9 +2,11 @@ package com.school_of_company.data.repository.auth
 
 import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.model.auth.request.LoginRequestModel
+import com.school_of_company.model.auth.request.PlaylistResponseModel
 import com.school_of_company.model.auth.request.SignUpCertificationNumberSendRequestModel
 import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.model.auth.request.SmsVerifyCodeRequestModel
+import com.school_of_company.model.auth.request.TrackModel
 import com.school_of_company.model.auth.response.LoginResponseModel
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
@@ -18,6 +20,8 @@ interface AuthRepository {
 
     // 💡 수정된 부분: tokenRefresh는 인자를 받지 않고, 내부에서 토큰을 처리합니다.
     fun tokenRefresh(): Flow<LoginResponseModel>
+
+    fun musicRR(memberId: Long): Flow<PlaylistResponseModel>
 
     fun signLogout(): Flow<Unit>
 

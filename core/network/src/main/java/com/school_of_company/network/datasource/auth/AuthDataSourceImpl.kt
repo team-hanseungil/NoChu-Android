@@ -7,6 +7,7 @@ import com.school_of_company.network.dto.auth.requset.SignUpRequest
 import com.school_of_company.network.dto.auth.requset.SmsVerifyCodeRequest
 import com.school_of_company.network.dto.reponse.EmotionResponse
 import com.school_of_company.network.dto.reponse.LoginResponse
+import com.school_of_company.network.dto.reponse.PlaylistResponse
 import com.school_of_company.network.util.performApiRequest
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
@@ -25,7 +26,8 @@ class AuthDataSourceImpl @Inject constructor(
     override fun tokenRefresh(): Flow<LoginResponse> =
         performApiRequest { authAPI.tokenRefresh() }
 
-
+    override fun musicRR(memberId: Long): Flow<PlaylistResponse> =
+        performApiRequest { authAPI.musicRR(memberId = memberId) }
 
     override fun postFace(memberId: Long,image: MultipartBody.Part,): Flow<EmotionResponse> =
         performApiRequest { authAPI.postFace(memberId = memberId, file = image) }

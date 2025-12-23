@@ -3,6 +3,7 @@ package com.school_of_company.data.repository.auth
 import com.school_of_company.datastore.datasource.AuthTokenDataSource
 import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.model.auth.request.LoginRequestModel
+import com.school_of_company.model.auth.request.PlaylistResponseModel
 import com.school_of_company.model.auth.request.SignUpCertificationNumberSendRequestModel
 import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.model.auth.request.SmsVerifyCodeRequestModel
@@ -46,6 +47,12 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun signLogout(): Flow<Unit> {
         return remoteDatasource.signLogout()
+    }
+
+    override fun musicRR(memberId: Long): Flow<PlaylistResponseModel> {
+        return remoteDatasource.musicRR(memberId = memberId).transform { response ->
+            emit(response.toModel())
+        }
     }
 
     override fun postFace(memberId: Long, image: MultipartBody.Part): Flow<EmotionResponseModel> {

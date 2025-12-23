@@ -7,6 +7,7 @@ import com.school_of_company.network.dto.auth.requset.SignUpRequest
 import com.school_of_company.network.dto.auth.requset.SmsVerifyCodeRequest
 import com.school_of_company.network.dto.member.response.GetAllMemberResponse
 import com.school_of_company.network.dto.reponse.EmotionResponse
+import com.school_of_company.network.dto.reponse.PlaylistResponse
 import dagger.Module
 import okhttp3.MultipartBody
 import retrofit2.http.Body
@@ -57,5 +58,12 @@ interface AuthAPI {
         @Path("memberId") memberId: Long,
         @Part file: MultipartBody.Part
     ): EmotionResponse
+
+    @Multipart
+    @POST("/api/music/{memberId}")
+    suspend fun musicRR(
+        @Path("memberId") memberId: Long,
+    ): PlaylistResponse
+
 
 }

@@ -6,6 +6,7 @@ import com.school_of_company.network.dto.auth.requset.SignUpRequest
 import com.school_of_company.network.dto.auth.requset.SmsVerifyCodeRequest
 import com.school_of_company.network.dto.reponse.EmotionResponse
 import com.school_of_company.network.dto.reponse.LoginResponse
+import com.school_of_company.network.dto.reponse.PlaylistResponse
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 
@@ -17,6 +18,8 @@ interface AuthDataSource {
     fun postFace(memberId: Long,image: MultipartBody.Part): Flow<EmotionResponse>
 
     fun tokenRefresh(): Flow<LoginResponse>
+
+    fun musicRR(memberId: Long): Flow<PlaylistResponse>
 
     fun signLogout(): Flow<Unit>
 
