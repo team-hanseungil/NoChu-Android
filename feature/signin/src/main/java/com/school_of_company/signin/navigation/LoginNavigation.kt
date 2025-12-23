@@ -38,7 +38,7 @@ fun NavController.navigateToSignIn(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.signInScreen(
     onBackClick: () -> Unit,
-    onMainClick: (Long) -> Unit, // ✅ (Long) -> Unit 대신 navigateToPhotoFace 호출을 가정합니다.
+    onMainClick: (Long) -> Unit, // 로그인 성공 시 memberId 전달
     onErrorToast: (throwable: Throwable?, message: Int?) -> Unit,
     onSignUpClick: () -> Unit
 ) {
@@ -46,8 +46,8 @@ fun NavGraphBuilder.signInScreen(
         SignInRoute(
             onBackClick = onBackClick,
             onErrorToast = onErrorToast,
-            // onMainClick: 로그인 성공 시 PhotoScreen으로 이동
-            onMainClick = onMainClick, // memberId를 받아서 처리
+            // onMainClick: 로그인 성공 시 memberId를 전달하여 PhotoScreen으로 이동
+            onMainClick = onMainClick,
             onSignUpClick = onSignUpClick
         )
     }
@@ -94,7 +94,7 @@ fun NavGraphBuilder.photoFaceScreen(
             }
         )
     ) { backStackEntry ->
-        // LongType으로 인자를 가져옴. LongType은 null이 아닐 것이므로 toLong() 사용 가능.
+        // LongType으로 인자를 가져옴.
         val memberId = backStackEntry.arguments?.getLong(MEMBER_ID_ARG) ?: 0L
 
         PhotoUploadRoute(

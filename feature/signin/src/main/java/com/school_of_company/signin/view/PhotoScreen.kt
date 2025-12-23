@@ -75,10 +75,6 @@ import java.time.format.DateTimeParseException
 import java.util.Locale
 import kotlin.math.roundToInt
 
-// ======================================================
-// HistoryScreen 상수 및 이모지 정의 (기존 HistoryScreen.kt에서 가져옴)
-// ======================================================
-
 const val DEFAULT_EMOJI = "❓"
 const val EMOJI_SIZE = 40.0 // 40.sp
 
@@ -101,10 +97,6 @@ val emotionEmojis: Map<String, String> = mapOf(
     "만족" to "🥰",
     "분노" to "😡",
 )
-
-// ======================================================
-// Route (PhotoUploadRoute 수정)
-// ======================================================
 @Composable
 fun PhotoUploadRoute(
     memberId: Long,
@@ -178,11 +170,11 @@ fun PhotoUploadRoute(
                     selectedImageUri = selectedImageUri,
                     uiState = uiState,
                     onGoPickAgain = { selectedIndex = 1 },
-                    onMusicClick = { selectedIndex = 3 }
+                    onMusicClick = { selectedIndex = 3 } // 음악 탭으로 이동
                 )
             }
             3 -> {
-                // 음악 화면 (미구현)
+                // 음악 화면 (미구현 -> MusicScreen으로 대체되어야 함)
                 Box(
                     modifier = Modifier
                         .padding(paddingValues)
@@ -191,16 +183,12 @@ fun PhotoUploadRoute(
                     contentAlignment = Alignment.Center
                 ) { Text("음악 추천 화면 (미구현)") }
             }
-            // 🚨🚨🚨 HistoryScreen 연결! 🚨🚨🚨
             4 -> { // 기록
-                // HistoryScreen의 내용을 직접 호출합니다.
                 Box(
                     modifier = Modifier
                         .padding(paddingValues)
                         .fillMaxSize()
                 ) {
-                    // memberId는 HistoryScreen 내부 로직에서 사용되므로,
-                    // 이 인덱스에서 historyViewModel을 사용하여 데이터를 로드하도록 처리했습니다.
                     HistoryScreenInternal(viewModel = historyViewModel, memberId = memberId)
                 }
             }
@@ -216,14 +204,6 @@ fun PhotoUploadRoute(
     }
 }
 
-// ======================================================
-// HistoryScreen 구현 (기존 HistoryScreen.kt에서 가져와서 이름만 변경)
-// ======================================================
-
-/**
- * 감정 기록 화면의 메인 컴포넌트입니다.
- * PostViewModel에 통합된 감정 기록 조회 기능을 사용합니다.
- */
 @Composable
 fun HistoryScreenInternal(
     viewModel: PostViewModel,
@@ -232,9 +212,7 @@ fun HistoryScreenInternal(
     // PostViewModel의 emotionHistoryUiState를 관찰합니다.
     val uiState by viewModel.emotionHistoryUiState.collectAsState()
 
-    // 화면이 처음 나타날 때 데이터를 로드합니다. (PhotoUploadRoute에서 selectedIndex 변경 시 로드하도록 변경 가능)
     LaunchedEffect(Unit) {
-        // 이미 PhotoUploadRoute에서 로드했거나, History 탭이 활성화될 때마다 로드합니다.
         viewModel.loadEmotionHistory(memberId)
     }
 
@@ -275,8 +253,6 @@ fun HistoryScreenInternal(
         }
     }
 }
-
-// HistoryScreen에서 사용된 하위 컴포넌트들을 여기에 정의합니다.
 
 @Composable
 fun LoadingState() {
@@ -475,9 +451,6 @@ fun StatisticItem(value: String, label: String, valueColor: Color, typography: G
 }
 
 
-// ======================================================
-// Navigation Bar (기존 PhotoUploadRoute.kt의 내용)
-// ======================================================
 @Composable
 fun RowScope.NoChuNavigationBarItem(
     modifier: Modifier = Modifier,
@@ -582,9 +555,6 @@ private fun NavigationContent(
     }
 }
 
-// ======================================================
-// Upload Screen (기존 PhotoUploadRoute.kt의 내용)
-// ======================================================
 @Composable
 fun PhotoUploadContent(
     modifier: Modifier = Modifier,
@@ -735,10 +705,6 @@ fun PhotoUploadContent(
         }
     }
 }
-
-// ======================================================
-// Analysis Screen (기존 PhotoUploadRoute.kt의 내용)
-// ======================================================
 
 private data class EmotionItem(
     val label: String,
