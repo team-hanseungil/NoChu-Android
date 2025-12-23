@@ -11,6 +11,7 @@ import com.school_of_company.Regex.isValidId
 import com.school_of_company.Regex.isValidPassword
 import com.school_of_company.data.repository.auth.AuthRepository
 import com.school_of_company.data.repository.local.LocalRepository
+import com.school_of_company.domain.repository.music.MusicRepository // MusicRepository import
 import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.network.errorHandling
@@ -18,7 +19,7 @@ import com.school_of_company.network.util.DeviceIdManager
 import com.school_of_company.post.viewmodel.uiState.ImageUpLoadUiState
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
-import com.school_of_company.signin.viewmodel.uistate.MusicRR
+import com.school_of_company.signin.viewmodel.uistate.MusicUiState // MusicUiState import
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
 import com.school_of_company.signin.viewmodel.uistate.SaveTokenUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
@@ -36,7 +37,8 @@ import javax.inject.Inject
 class SignInViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val savedStateHandle: SavedStateHandle,
-    private val localRepository: LocalRepository
+    private val localRepository: LocalRepository,
+    private val musicRepository: MusicRepository // MusicRepository 주입
 ) : ViewModel() {
     companion object {
         private const val ID = "id"
@@ -54,36 +56,39 @@ class SignInViewModel @Inject constructor(
     private val _signUpUiState = MutableStateFlow<SignUpUiState>(SignUpUiState.Loading)
     internal val signUpUiState = _signUpUiState.asStateFlow()
 
-    // ========================= 로그인 로직 ==========================
+    // --- Music UiState 추가 ---
+    private val _musicUiState = MutableStateFlow<MusicUiState>(MusicUiState.Idle) // 초기 상태는 Idle
+    val musicUiState = _musicUiState.asStateFlow()
 
-    private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Idle)
-    val postFaceUiState = _postFaceUiState.asStateFlow()
+    // ========================= 음악 로직 ==========================
 
-    private val _musicRR = MutableStateFlow<MusicRR>(MusicRR.Loading)
-    val musicRR = _musicRR.asStateFlow()
-
-    internal fun muicRR(memberId: Long) = viewModelScope.launch {
-        authRepository.musicRR(memberId)
+    internal fun fetchPlaylists(memberId: Long) = viewModelScope.launch {
+        musicRepository.getPlaylists(memberId)
             .asResult()
             .collectLatest { result ->
                 when (result) {
                     is Result.Loading -> {
-                        _musicRR.value = MusicRR.Loading
+                        _musicUiState.value = MusicUiState.Loading
                     }
 
                     is Result.Success -> {
-                        _musicRR.value = MusicRR.Success(result.data)
+                        _musicUiState.value = MusicUiState.Success(result.data)
 
-                        Log.d(TAG, "muicRR: ${result.data}")
+                        Log.d(TAG, "Playlists fetched successfully: ${result.data}")
                     }
 
                     is Result.Error -> {
-                        _musicRR.value = MusicRR.Error(result.exception)
+                        _musicUiState.value = MusicUiState.Error(result.exception)
+                        Log.e(TAG, "Failed to fetch playlists: ${result.exception.message}")
                     }
                 }
             }
     }
 
+    // ========================= 기타 로직 ==========================
+
+    private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Idle)
+    val postFaceUiState = _postFaceUiState.asStateFlow()
 
     internal fun postFace(memberId: Long, context: Context, image: Uri) = viewModelScope.launch {
         _postFaceUiState.value = PostFaceUiState.Loading
@@ -116,8 +121,6 @@ class SignInViewModel @Inject constructor(
 
         val nicknameValue = id.value
         val passwordValue = password.value
-
-
 
         val body = SignUpRequestModel(
             nickname = nicknameValue,
@@ -153,8 +156,6 @@ class SignInViewModel @Inject constructor(
             }
     }
 
-    // ========================= 회원가입 로직 =========================
-
     internal fun signUp(body: SignUpRequestModel) = viewModelScope.launch {
         _signUpUiState.value = SignUpUiState.Loading
 
@@ -185,4 +186,3 @@ class SignInViewModel @Inject constructor(
         savedStateHandle[PASSWORD] = value
     }
 }
-
