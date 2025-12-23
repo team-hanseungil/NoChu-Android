@@ -56,10 +56,9 @@ interface AuthAPI {
     @POST("/api/emotions/{memberId}")
     suspend fun postFace(
         @Path("memberId") memberId: Long,
-        @Part file: MultipartBody.Part
+        @Part image: MultipartBody.Part
     ): EmotionResponse
 
-    @Multipart
     @POST("/api/music/{memberId}")
     suspend fun musicRR(
         @Path("memberId") memberId: Long,
