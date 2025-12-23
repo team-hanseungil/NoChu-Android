@@ -13,6 +13,7 @@ import com.school_of_company.network.api.PostAPI
 import com.school_of_company.network.api.ReportAPI
 import com.school_of_company.network.api.ReviewAPI
 import com.school_of_company.network.api.WebhookAPI
+import com.school_of_company.network.api.MusicAPI // 1. MusicAPI를 import 합니다.
 import com.school_of_company.network.util.AuthInterceptor
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -87,6 +88,12 @@ object NetworkModule {
     @Singleton
     fun provideAuthAPI(retrofit: Retrofit): AuthAPI =
         retrofit.create(AuthAPI::class.java)
+
+    // 2. MusicAPI 제공 함수 추가
+    @Provides
+    @Singleton
+    fun provideMusicAPI(retrofit: Retrofit): MusicAPI =
+        retrofit.create(MusicAPI::class.java)
 
     @Provides
     @Singleton
