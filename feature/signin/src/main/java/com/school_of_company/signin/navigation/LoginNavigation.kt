@@ -6,10 +6,9 @@ import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument // NavType 사용을 위해 추가
+import com.school_of_company.nochumain.PhotoUploadRoute
 import com.school_of_company.signin.view.SignInRoute
 import com.school_of_company.signup.view.SignUpScreen
-// ✅ PhotoScreen으로 컴포넌트 이름 업데이트를 가정하여 임포트 수정
-import com.school_of_company.nochumain.PhotoScreen
 
 const val StartRoute = "Start_route"
 const val SignInRoute = "Sign_in_route"
@@ -98,8 +97,7 @@ fun NavGraphBuilder.photoFaceScreen(
         // LongType으로 인자를 가져옴. LongType은 null이 아닐 것이므로 toLong() 사용 가능.
         val memberId = backStackEntry.arguments?.getLong(MEMBER_ID_ARG) ?: 0L
 
-        // PhotoScreen 컴포넌트 호출
-        PhotoScreen(
+        PhotoUploadRoute(
             memberId = memberId
         )
     }
