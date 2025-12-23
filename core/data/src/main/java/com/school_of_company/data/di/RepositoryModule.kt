@@ -12,6 +12,7 @@ import com.school_of_company.data.repository.local.LocalRepository
 import com.school_of_company.data.repository.local.LocalRepositoryImpl
 import com.school_of_company.data.repository.member.MemberRepository
 import com.school_of_company.data.repository.member.MemberRepositoryImpl
+import com.school_of_company.data.repository.music.MusicRepositoryImpl
 import com.school_of_company.data.repository.notice.NoticeRepository
 import com.school_of_company.data.repository.notice.NoticeRepositoryImpl
 import com.school_of_company.data.repository.post.EmotionRepository
@@ -22,6 +23,9 @@ import com.school_of_company.data.repository.report.ReportRepository
 import com.school_of_company.data.repository.report.ReportRepositoryImpl
 import com.school_of_company.data.repository.review.ReviewRepository
 import com.school_of_company.data.repository.review.ReviewRepositoryImpl
+import com.school_of_company.domain.repository.music.MusicRepository
+import com.school_of_company.network.datasource.music.MusicDataSource
+import com.school_of_company.network.datasource.music.MusicDataSourceImpl
 import com.school_of_company.network.datasource.post.EmotionDataSource
 import com.school_of_company.network.datasource.post.EmotionDataSourceImpl
 import dagger.Binds
@@ -94,4 +98,18 @@ abstract class RepositoryModule {
     abstract fun bindEmotionDataSource(
         emotionDataSourceImpl: EmotionDataSourceImpl
     ): EmotionDataSource
+
+    // --- Music Repository 바인딩 추가 ---
+    @Binds
+    abstract fun bindMusicRepository(
+        musicRepositoryImpl: MusicRepositoryImpl
+    ): MusicRepository
+
+    // --- Music DataSource 바인딩 추가 ---
+    @Binds
+    @Singleton
+    abstract fun bindMusicDataSource(
+        musicDataSourceImpl: MusicDataSourceImpl
+    ): MusicDataSource
+
 }
