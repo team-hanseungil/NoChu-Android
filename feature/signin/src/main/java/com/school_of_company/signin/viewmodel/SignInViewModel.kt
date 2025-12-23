@@ -18,13 +18,13 @@ import com.school_of_company.network.util.DeviceIdManager
 import com.school_of_company.post.viewmodel.uiState.ImageUpLoadUiState
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
-import com.school_of_company.signin.view.getMultipartFile
 import com.school_of_company.signin.viewmodel.uistate.MusicRR
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
 import com.school_of_company.signin.viewmodel.uistate.SaveTokenUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
 import com.school_of_company.signin.viewmodel.uistate.SignUpUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import getMultipartFile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -86,6 +86,8 @@ class SignInViewModel @Inject constructor(
 
 
     internal fun postFace(memberId: Long, context: Context, image: Uri) = viewModelScope.launch {
+        _postFaceUiState.value = PostFaceUiState.Loading
+
         val multipartFile = getMultipartFile(context, image)
             ?: run {
                 _postFaceUiState.value = PostFaceUiState.Error(
@@ -98,21 +100,13 @@ class SignInViewModel @Inject constructor(
             .asResult()
             .collectLatest { result ->
                 when (result) {
-                    is Result.Loading -> {
-                        _postFaceUiState.value = PostFaceUiState.Loading
-                    }
-
-                    is Result.Success -> {
-                        _postFaceUiState.value = PostFaceUiState.Success(result.data)
-                    }
-
-                    is Result.Error -> {
-                        _postFaceUiState.value = PostFaceUiState.Error(result.exception)
-                        // ✅ 여기서 throw 하면 앱 죽을 수 있음 -> 제거
-                    }
+                    is Result.Loading -> _postFaceUiState.value = PostFaceUiState.Loading
+                    is Result.Success -> _postFaceUiState.value = PostFaceUiState.Success(result.data)
+                    is Result.Error -> _postFaceUiState.value = PostFaceUiState.Error(result.exception)
                 }
             }
     }
+
     fun resetPostFaceState() {
         _postFaceUiState.value = PostFaceUiState.Idle
     }

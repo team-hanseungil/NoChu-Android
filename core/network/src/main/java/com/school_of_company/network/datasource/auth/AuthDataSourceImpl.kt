@@ -30,7 +30,7 @@ class AuthDataSourceImpl @Inject constructor(
         performApiRequest { authAPI.musicRR(memberId = memberId) }
 
     override fun postFace(memberId: Long,image: MultipartBody.Part,): Flow<EmotionResponse> =
-        performApiRequest { authAPI.postFace(memberId = memberId, file = image) }
+        performApiRequest { authAPI.postFace(memberId = memberId, image = image) }
 
 
     override fun signLogout(): Flow<Unit> =
