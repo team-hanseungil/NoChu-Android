@@ -12,14 +12,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -29,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -46,19 +54,56 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.school_of_company.design_system.R
 import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.design_system.theme.GwangSanTypography
+import com.school_of_company.design_system.theme.color.ColorTheme
 import com.school_of_company.design_system.theme.color.GwangSanColor
 import com.school_of_company.model.auth.request.EmotionResponseModel
+import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
+import com.school_of_company.network.dto.reponse.EmotionRecordResponse
+import com.school_of_company.post.viewmodel.PostViewModel
+import com.school_of_company.post.viewmodel.uiState.HistoryUiState
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.util.Locale
 import kotlin.math.roundToInt
 
 // ======================================================
-// Route
+// HistoryScreen 상수 및 이모지 정의 (기존 HistoryScreen.kt에서 가져옴)
+// ======================================================
+
+const val DEFAULT_EMOJI = "❓"
+const val EMOJI_SIZE = 40.0 // 40.sp
+
+const val EMOJI_CONTAINER_SIZE = 56.0 // 56.dp
+
+const val EMOJI_CONTAINER_CORNER_RADIUS = 8.0 // 8.dp
+
+const val DATE_ICON = "📅"
+
+val emotionEmojis: Map<String, String> = mapOf(
+    "기쁨" to "😄",
+    "행복" to "😊",
+    "평온" to "😌",
+    "즐거움" to "😄",
+    "차분함" to "🙂",
+    "설렘" to "🤩",
+    "슬픔" to "😢",
+    "불안" to "😰",
+    "화남" to "😠",
+    "만족" to "🥰",
+    "분노" to "😡",
+)
+
+// ======================================================
+// Route (PhotoUploadRoute 수정)
 // ======================================================
 @Composable
 fun PhotoUploadRoute(
@@ -67,17 +112,21 @@ fun PhotoUploadRoute(
 ) {
     val context = LocalContext.current
 
+    // "사진"은 인덱스 1, "기록"은 인덱스 4
     var selectedIndex by remember { mutableIntStateOf(1) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val uiState by viewModel.postFaceUiState.collectAsState()
+
+    // HistoryScreen에서 사용할 PostViewModel을 hiltViewModel로 주입받습니다.
+    val historyViewModel: PostViewModel = hiltViewModel()
 
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             selectedImageUri = uri
             if (uri != null) {
                 viewModel.resetPostFaceState()
-                selectedIndex = 1
+                selectedIndex = 1 // 이미지 선택 후 다시 사진 업로드 탭으로 돌아옵니다.
             }
         }
 
@@ -85,12 +134,28 @@ fun PhotoUploadRoute(
         bottomBar = {
             NavigationContent(
                 selectedIndex = selectedIndex,
-                onItemSelected = { index -> selectedIndex = index }
+                onItemSelected = { index ->
+                    selectedIndex = index
+                    // History 탭이 선택되었을 때만 데이터 로드를 시작합니다.
+                    if (index == 4) {
+                        historyViewModel.loadEmotionHistory(memberId)
+                    }
+                }
             )
         }
     ) { paddingValues ->
         when (selectedIndex) {
-            1 -> {
+            0 -> {
+                // 홈 화면 (미구현)
+                Box(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxSize()
+                        .background(GwangSanColor.white),
+                    contentAlignment = Alignment.Center
+                ) { Text("홈 화면 (미구현)") }
+            }
+            1 -> { // 사진 업로드
                 PhotoUploadContent(
                     modifier = Modifier.padding(paddingValues),
                     selectedImageUri = selectedImageUri,
@@ -107,8 +172,7 @@ fun PhotoUploadRoute(
                     }
                 )
             }
-
-            2 -> {
+            2 -> { // 분석
                 AnalysisContent(
                     modifier = Modifier.padding(paddingValues),
                     selectedImageUri = selectedImageUri,
@@ -117,13 +181,35 @@ fun PhotoUploadRoute(
                     onMusicClick = { selectedIndex = 3 }
                 )
             }
-
+            3 -> {
+                // 음악 화면 (미구현)
+                Box(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxSize()
+                        .background(GwangSanColor.white),
+                    contentAlignment = Alignment.Center
+                ) { Text("음악 추천 화면 (미구현)") }
+            }
+            // 🚨🚨🚨 HistoryScreen 연결! 🚨🚨🚨
+            4 -> { // 기록
+                // HistoryScreen의 내용을 직접 호출합니다.
+                Box(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxSize()
+                ) {
+                    // memberId는 HistoryScreen 내부 로직에서 사용되므로,
+                    // 이 인덱스에서 historyViewModel을 사용하여 데이터를 로드하도록 처리했습니다.
+                    HistoryScreenInternal(viewModel = historyViewModel, memberId = memberId)
+                }
+            }
             else -> {
                 Box(
                     modifier = Modifier
                         .padding(paddingValues)
                         .fillMaxSize()
-                        .background(Color.White)
+                        .background(GwangSanColor.white)
                 )
             }
         }
@@ -131,7 +217,266 @@ fun PhotoUploadRoute(
 }
 
 // ======================================================
-// Navigation Bar
+// HistoryScreen 구현 (기존 HistoryScreen.kt에서 가져와서 이름만 변경)
+// ======================================================
+
+/**
+ * 감정 기록 화면의 메인 컴포넌트입니다.
+ * PostViewModel에 통합된 감정 기록 조회 기능을 사용합니다.
+ */
+@Composable
+fun HistoryScreenInternal(
+    viewModel: PostViewModel,
+    memberId: Long
+) {
+    // PostViewModel의 emotionHistoryUiState를 관찰합니다.
+    val uiState by viewModel.emotionHistoryUiState.collectAsState()
+
+    // 화면이 처음 나타날 때 데이터를 로드합니다. (PhotoUploadRoute에서 selectedIndex 변경 시 로드하도록 변경 가능)
+    LaunchedEffect(Unit) {
+        // 이미 PhotoUploadRoute에서 로드했거나, History 탭이 활성화될 때마다 로드합니다.
+        viewModel.loadEmotionHistory(memberId)
+    }
+
+    // GwangSanTheme 적용
+    GwangSanTheme { colors, typography ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                // 배경색을 디자인 시스템의 gray100으로 설정
+                .background(GwangSanColor.gray100)
+                .padding(horizontal = 24.dp)
+        ) {
+            // --- 헤더 영역 ---
+            Text(
+                text = "감정 기록",
+                style = typography.titleLarge,
+                color = GwangSanColor.black,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+            Text(
+                text = "지금까지의 감정 분석 기록입니다",
+                style = typography.body5,
+                color = GwangSanColor.gray700,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            // --- UI 상태에 따른 화면 분기 ---
+            when (uiState) {
+                HistoryUiState.Loading -> LoadingState()
+                is HistoryUiState.Success -> HistoryContent(
+                    (uiState as HistoryUiState.Success).response,
+                    colors,
+                    typography
+                )
+                is HistoryUiState.Error -> ErrorState((uiState as HistoryUiState.Error).message, typography)
+                HistoryUiState.Empty -> EmptyState(typography)
+            }
+        }
+    }
+}
+
+// HistoryScreen에서 사용된 하위 컴포넌트들을 여기에 정의합니다.
+
+@Composable
+fun LoadingState() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(color = GwangSanColor.main500)
+    }
+}
+
+@Composable
+fun EmptyState(typography: GwangSanTypography) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            text = "기록된 감정 분석 결과가 없습니다.",
+            color = GwangSanColor.gray700,
+            style = typography.body4
+        )
+    }
+}
+
+@Composable
+fun ErrorState(message: String, typography: GwangSanTypography) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            text = "오류 발생: $message",
+            color = GwangSanColor.error,
+            style = typography.body4
+        )
+    }
+}
+
+@Composable
+fun HistoryContent(
+    response: EmotionHistoryResponse,
+    colors: ColorTheme,
+    typography: GwangSanTypography
+) {
+    StatisticsCard(response = response, colors = colors, typography = typography)
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    val fixedProgressBarColor = colors.purple
+    val trackColor = colors.gray200
+
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 16.dp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(response.emotions) { record ->
+            EmotionRecordItem(record = record, typography = typography, fixedProgressBarColor = fixedProgressBarColor, trackColor = trackColor)
+        }
+    }
+}
+
+@Composable
+fun EmotionRecordItem(
+    record: EmotionRecordResponse,
+    typography: GwangSanTypography,
+    fixedProgressBarColor: Color,
+    trackColor: Color
+) {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.KOREA)
+    val displayFormatter = DateTimeFormatter.ofPattern("M월 d일", Locale.KOREA)
+
+    val dateText = try {
+        LocalDate.parse(record.date, formatter).format(displayFormatter)
+    } catch (e: DateTimeParseException) {
+        record.date
+    } catch (e: Exception) {
+        record.date
+    }
+
+    val emoji = emotionEmojis[record.emotion] ?: DEFAULT_EMOJI
+
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = GwangSanColor.white),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(EMOJI_CONTAINER_SIZE.dp)
+                    .clip(RoundedCornerShape(EMOJI_CONTAINER_CORNER_RADIUS.dp))
+                    .background(GwangSanColor.gray200),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = emoji,
+                    fontSize = EMOJI_SIZE.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = DATE_ICON, style = typography.caption)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = dateText, style = typography.caption, color = GwangSanColor.gray700)
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = record.emotion,
+                    style = typography.body1,
+                    color = GwangSanColor.black
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val confidenceRatio = record.confidence / 100f
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(trackColor)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(confidenceRatio)
+                            .fillMaxHeight()
+                            .background(fixedProgressBarColor)
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${record.confidence}% 신뢰도",
+                    style = typography.caption,
+                    color = GwangSanColor.gray700
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun StatisticsCard(response: EmotionHistoryResponse, colors: ColorTheme, typography: GwangSanTypography) {
+    val primaryColor = colors.subPOPule
+    val secondaryColor = colors.purple
+
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = GwangSanColor.white),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp, horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            StatisticItem(
+                value = response.totalRecords.toString(),
+                label = "총 기록",
+                valueColor = primaryColor,
+                typography = typography
+            )
+            StatisticItem(
+                value = "${response.averageConfidence}%",
+                label = "평균 신뢰도",
+                valueColor = secondaryColor,
+                typography = typography
+            )
+            StatisticItem(
+                value = response.streak.toString(),
+                label = "연속 기록",
+                valueColor = primaryColor,
+                typography = typography
+            )
+        }
+    }
+}
+
+@Composable
+fun StatisticItem(value: String, label: String, valueColor: Color, typography: GwangSanTypography) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            style = typography.titleLarge.copy(fontSize = 32.sp),
+            color = valueColor
+        )
+        Text(
+            text = label,
+            style = typography.caption,
+            color = GwangSanColor.gray700
+        )
+    }
+}
+
+
+// ======================================================
+// Navigation Bar (기존 PhotoUploadRoute.kt의 내용)
 // ======================================================
 @Composable
 fun RowScope.NoChuNavigationBarItem(
@@ -238,7 +583,7 @@ private fun NavigationContent(
 }
 
 // ======================================================
-// Upload Screen
+// Upload Screen (기존 PhotoUploadRoute.kt의 내용)
 // ======================================================
 @Composable
 fun PhotoUploadContent(
@@ -392,8 +737,9 @@ fun PhotoUploadContent(
 }
 
 // ======================================================
-// Analysis Screen
+// Analysis Screen (기존 PhotoUploadRoute.kt의 내용)
 // ======================================================
+
 private data class EmotionItem(
     val label: String,
     val percent: Int
@@ -492,7 +838,7 @@ fun AnalysisContent(
                         }
 
                         is PostFaceUiState.Success -> {
-                            val data = uiState.data  // EmotionResponse
+                            val data = uiState.data
                             val emotionItems = data.toEmotionItems()
 
                             Text(
@@ -616,9 +962,6 @@ private fun EmotionRow(
     }
 }
 
-// ======================================================
-// EmotionResponse -> EmotionRow Data
-// ======================================================
 private fun EmotionResponseModel.toEmotionItems(): List<EmotionItem> {
     fun pct(v: Double): Int = (v * 100).roundToInt().coerceIn(0, 100)
 
@@ -630,20 +973,4 @@ private fun EmotionResponseModel.toEmotionItems(): List<EmotionItem> {
         EmotionItem("상처", pct(emotions.hurt)),
         EmotionItem("슬픔", pct(emotions.sad)),
     ).sortedByDescending { it.percent }
-}
-
-// ======================================================
-// Preview
-// ======================================================
-@Preview(showBackground = true)
-@Composable
-fun FullPhotoUploadScreenPreview() {
-    GwangSanTheme { _, _ ->
-        PhotoUploadContent(
-            selectedImageUri = null,
-            uiState = PostFaceUiState.Loading,
-            onPickImage = {},
-            onPostClick = {}
-        )
-    }
 }

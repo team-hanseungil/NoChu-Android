@@ -96,7 +96,7 @@ class PostViewModel @Inject constructor(
     /**
      * 감정 기록 데이터를 로드하고 UI 상태를 업데이트합니다.
      */
-    internal fun loadEmotionHistory(memberId: Long) = viewModelScope.launch {
+    fun loadEmotionHistory(memberId: Long) = viewModelScope.launch {
         emotionRepository.getEmotionHistory(memberId)
             .onStart { _emotionHistoryUiState.value = HistoryUiState.Loading }
             .catch { e ->
