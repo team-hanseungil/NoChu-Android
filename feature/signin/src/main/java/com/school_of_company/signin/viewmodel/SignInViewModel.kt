@@ -19,6 +19,7 @@ import com.school_of_company.post.viewmodel.uiState.ImageUpLoadUiState
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
 import com.school_of_company.signin.view.getMultipartFile
+import com.school_of_company.signin.viewmodel.uistate.MusicRR
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
 import com.school_of_company.signin.viewmodel.uistate.SaveTokenUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
@@ -57,6 +58,32 @@ class SignInViewModel @Inject constructor(
 
     private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Idle)
     val postFaceUiState = _postFaceUiState.asStateFlow()
+
+    private val _musicRR = MutableStateFlow<MusicRR>(MusicRR.Loading)
+    val musicRR = _musicRR.asStateFlow()
+
+    internal fun muicRR(memberId: Long) = viewModelScope.launch {
+        authRepository.musicRR(memberId)
+            .asResult()
+            .collectLatest { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _musicRR.value = MusicRR.Loading
+                    }
+
+                    is Result.Success -> {
+                        _musicRR.value = MusicRR.Success(result.data)
+
+                        Log.d(TAG, "muicRR: ${result.data}")
+                    }
+
+                    is Result.Error -> {
+                        _musicRR.value = MusicRR.Error(result.exception)
+                    }
+                }
+            }
+    }
+
 
     internal fun postFace(memberId: Long, context: Context, image: Uri) = viewModelScope.launch {
         val multipartFile = getMultipartFile(context, image)

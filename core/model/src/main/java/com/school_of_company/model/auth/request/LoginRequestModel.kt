@@ -14,6 +14,21 @@ data class EmotionResponseModel(
     val comment: String
 )
 
+data class PlaylistResponseModel(
+    val id: Long,
+    val title: String,
+    val imageUrl: String?,
+    val tracks: List<TrackModel>
+)
+
+data class TrackModel(
+    val artists: List<String>,
+    val title: String,
+    val imageUrl: String?,
+    val previewUrl: String?,
+    val duration: String
+)
+
 
 data class EmotionsModel(
     val happy: Double,
