@@ -1,8 +1,5 @@
 package com.school_of_company.data.di
 
-import MusicDataSource
-import MusicDataSourceImpl
-import MusicRepositoryImpl
 import com.school_of_company.data.repository.alert.AlertRepository
 import com.school_of_company.data.repository.alert.AlertRepositoryImpl
 import com.school_of_company.data.repository.auth.AuthRepository
@@ -26,6 +23,9 @@ import com.school_of_company.data.repository.report.ReportRepositoryImpl
 import com.school_of_company.data.repository.review.ReviewRepository
 import com.school_of_company.data.repository.review.ReviewRepositoryImpl
 import com.school_of_company.data.repository.music.MusicRepository
+import com.school_of_company.data.repository.music.MusicRepositoryImpl
+import com.school_of_company.network.datasource.music.MusicDataSource
+import com.school_of_company.network.datasource.music.MusicDataSourceImpl
 import com.school_of_company.network.datasource.post.EmotionDataSource
 import com.school_of_company.network.datasource.post.EmotionDataSourceImpl
 import dagger.Binds
