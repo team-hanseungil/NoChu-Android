@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument // NavType 사용을 위해 추가
+import androidx.navigation.navArgument
 import com.school_of_company.nochumain.PhotoUploadRoute
 import com.school_of_company.signin.view.SignInRoute
 import com.school_of_company.signup.view.SignUpScreen
@@ -14,10 +14,46 @@ const val StartRoute = "Start_route"
 const val SignInRoute = "Sign_in_route"
 const val SignUpRoute = "Sign_up_route"
 
-// ✅ Route 이름: PhotoScreen의 Route를 정의
+// ✅ PhotoFace (메인 탭 화면) Route 정의
 const val PhotoFaceRoute = "Photo_face_route"
 private const val MEMBER_ID_ARG = "memberId"
 private const val PhotoFaceRouteWithArg = "$PhotoFaceRoute/{$MEMBER_ID_ARG}"
+
+// ======================================================
+// 🚀 음악 상세 화면 (Music Detail) Route 정의 및 Nav 통합
+// ======================================================
+
+const val MUSIC_DETAIL_ID_ARG = "playlistId"
+const val MUSIC_DETAIL_ROUTE = "music_detail_route/{$MUSIC_DETAIL_ID_ARG}" // 상세 화면 경로
+
+/**
+ * [NavGraphBuilder] 확장 함수: 음악 상세 화면을 네비게이션 그래프에 등록합니다.
+ */
+fun NavGraphBuilder.musicDetailScreen() {
+    composable(
+        route = MUSIC_DETAIL_ROUTE,
+        arguments = listOf(
+            navArgument(MUSIC_DETAIL_ID_ARG) { type = NavType.LongType }
+        )
+    ) { backStackEntry ->
+        val playlistId = backStackEntry.arguments?.getLong(MUSIC_DETAIL_ID_ARG) ?: 0L
+
+        // TODO: MusicDetailScreen 컴포저블을 호출하고 playlistId를 넘겨줍니다.
+        // 예: MusicDetailScreen(playlistId = playlistId)
+    }
+}
+
+/**
+ * [NavController] 확장 함수: 음악 상세 화면으로 이동합니다.
+ */
+fun NavController.navigateToMusicDetail(playlistId: Long, navOptions: NavOptions? = null) {
+    this.navigate(MUSIC_DETAIL_ROUTE.replace("{$MUSIC_DETAIL_ID_ARG}", playlistId.toString()), navOptions)
+}
+
+
+// ======================================================
+// ✅ 기존 로그인/회원가입 네비게이션 (변경 없음)
+// ======================================================
 
 fun NavController.navigateToStart(navOptions: NavOptions? = null) {
     this.navigate(StartRoute, navOptions)
@@ -72,7 +108,7 @@ fun NavGraphBuilder.signUpScreen(
 }
 
 // ======================================================
-// ✅ PhotoFace (PhotoScreen) 네비게이션
+// ✅ PhotoFace (PhotoScreen) 네비게이션 (수정 필요)
 // ======================================================
 
 fun NavController.navigateToPhotoFace(
@@ -84,7 +120,9 @@ fun NavController.navigateToPhotoFace(
 }
 
 fun NavGraphBuilder.photoFaceScreen(
-    onBackClick: () -> Unit, // 현재 사용되지 않지만 구조 유지를 위해 남겨둠
+    onBackClick: () -> Unit,
+    // ⚠️ 수정: Music Detail로 이동하는 콜백 추가
+    onNavigateToMusicDetail: (Long) -> Unit
 ) {
     composable(
         route = PhotoFaceRouteWithArg,
@@ -98,7 +136,9 @@ fun NavGraphBuilder.photoFaceScreen(
         val memberId = backStackEntry.arguments?.getLong(MEMBER_ID_ARG) ?: 0L
 
         PhotoUploadRoute(
-            memberId = memberId
+            memberId = memberId,
+            // ⚠️ 콜백 전달
+            onNavigateToMusicDetail = onNavigateToMusicDetail
         )
     }
 }

@@ -49,6 +49,8 @@ import com.school_of_company.profile.navigation.otherPersonProfileScreen
 import com.school_of_company.profile.navigation.otherReviewScreen
 import com.school_of_company.signin.navigation.SignUpRoute
 import com.school_of_company.signin.navigation.StartRoute
+import com.school_of_company.signin.navigation.musicDetailScreen
+import com.school_of_company.signin.navigation.navigateToMusicDetail
 import com.school_of_company.signin.navigation.navigateToPhotoFace
 import com.school_of_company.signin.navigation.navigateToSignIn
 import com.school_of_company.signin.navigation.photoFaceScreen
@@ -101,15 +103,19 @@ fun GwangsanNavHost(
         )
 
         photoFaceScreen(
-            onBackClick = { navController.popBackStack() }
+            onBackClick = { navController.popBackStack() },
+            // 🚀 누락된 파라미터 추가 및 NavController의 확장 함수 연결
+            onNavigateToMusicDetail = { playlistId ->
+                navController.navigateToMusicDetail(playlistId)
+            }
         )
 
-
+        musicDetailScreen()
 
 
         mainScreen(
             navigateToDetail = { id ->
-                navController.navigateToReadMore(id)
+               navController.navigateToReadMore(id)
             },
             onBackClick = { navController.popBackStack() },
             onErrorToast = onErrorToast,
