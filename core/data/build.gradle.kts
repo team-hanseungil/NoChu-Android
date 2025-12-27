@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    defaultPublishConfig = "debug"  // 또는 "release"
     namespace = "com.school_of_company.data"
 }
 

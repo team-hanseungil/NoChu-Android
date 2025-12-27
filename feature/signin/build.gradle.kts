@@ -2,7 +2,6 @@ plugins {
     id("gwangsan.android.feature")
     id("gwangsan.android.hilt")
     id("gwangsan.android.compose")
-
 }
 
 android {
@@ -11,11 +10,11 @@ android {
 
 dependencies {
     implementation(project(":feature:signup"))
+    implementation(project(":feature:post"))
+    implementation(project(":core:data"))
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation(project(":feature:post"))
     implementation(libs.coil.kt)
-    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose.android)
     implementation(libs.androidx.exifinterface)
 }

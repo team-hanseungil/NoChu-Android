@@ -11,7 +11,7 @@ import com.school_of_company.Regex.isValidId
 import com.school_of_company.Regex.isValidPassword
 import com.school_of_company.data.repository.auth.AuthRepository
 import com.school_of_company.data.repository.local.LocalRepository
-import com.school_of_company.domain.repository.music.MusicRepository // MusicRepository import
+import com.school_of_company.data.repository.music.MusicRepository
 import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.network.errorHandling
@@ -19,7 +19,8 @@ import com.school_of_company.network.util.DeviceIdManager
 import com.school_of_company.post.viewmodel.uiState.ImageUpLoadUiState
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
-import com.school_of_company.signin.viewmodel.uistate.MusicUiState // MusicUiState import
+import com.school_of_company.signin.viewmodel.uistate.MusicUiState
+import com.school_of_company.signin.viewmodel.uistate.PlaylistDetailUiState // 상세 UI 상태 import
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
 import com.school_of_company.signin.viewmodel.uistate.SaveTokenUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
@@ -56,9 +57,13 @@ class SignInViewModel @Inject constructor(
     private val _signUpUiState = MutableStateFlow<SignUpUiState>(SignUpUiState.Loading)
     internal val signUpUiState = _signUpUiState.asStateFlow()
 
-    // --- Music UiState 추가 ---
-    private val _musicUiState = MutableStateFlow<MusicUiState>(MusicUiState.Idle) // 초기 상태는 Idle
+    // --- Music UiState (목록) ---
+    private val _musicUiState = MutableStateFlow<MusicUiState>(MusicUiState.Idle)
     val musicUiState = _musicUiState.asStateFlow()
+
+    // --- Music Detail UiState (상세) <-- 새로 추가 ---
+    private val _playlistDetailUiState = MutableStateFlow<PlaylistDetailUiState>(PlaylistDetailUiState.Idle)
+    val playlistDetailUiState = _playlistDetailUiState.asStateFlow()
 
     // ========================= 음악 로직 ==========================
 
@@ -73,13 +78,37 @@ class SignInViewModel @Inject constructor(
 
                     is Result.Success -> {
                         _musicUiState.value = MusicUiState.Success(result.data)
-
                         Log.d(TAG, "Playlists fetched successfully: ${result.data}")
                     }
 
                     is Result.Error -> {
                         _musicUiState.value = MusicUiState.Error(result.exception)
                         Log.e(TAG, "Failed to fetch playlists: ${result.exception.message}")
+                    }
+                }
+            }
+    }
+
+    /**
+     * 특정 플레이리스트의 상세 정보를 조회합니다.
+     */
+    internal fun fetchPlaylistDetail(playlistId: Long) = viewModelScope.launch {
+        musicRepository.getPlaylistDetail(playlistId)
+            .asResult()
+            .collectLatest { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _playlistDetailUiState.value = PlaylistDetailUiState.Loading
+                    }
+
+                    is Result.Success -> {
+                        _playlistDetailUiState.value = PlaylistDetailUiState.Success(result.data)
+                        Log.d(TAG, "Playlist detail fetched successfully: ${result.data.id}")
+                    }
+
+                    is Result.Error -> {
+                        _playlistDetailUiState.value = PlaylistDetailUiState.Error(result.exception)
+                        Log.e(TAG, "Failed to fetch playlist detail: ${result.exception.message}")
                     }
                 }
             }

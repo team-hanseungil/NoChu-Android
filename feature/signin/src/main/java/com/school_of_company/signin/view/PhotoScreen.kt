@@ -52,7 +52,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -63,10 +62,12 @@ import com.school_of_company.design_system.theme.GwangSanTypography
 import com.school_of_company.design_system.theme.color.ColorTheme
 import com.school_of_company.design_system.theme.color.GwangSanColor
 import com.school_of_company.model.auth.request.EmotionResponseModel
+import com.school_of_company.model.music.response.PlaylistModel
 import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
 import com.school_of_company.network.dto.reponse.EmotionRecordResponse
 import com.school_of_company.post.viewmodel.PostViewModel
 import com.school_of_company.post.viewmodel.uiState.HistoryUiState
+import com.school_of_company.signin.view.MusicScreen
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
 import java.time.LocalDate
@@ -97,10 +98,13 @@ val emotionEmojis: Map<String, String> = mapOf(
     "만족" to "🥰",
     "분노" to "😡",
 )
+
 @Composable
 fun PhotoUploadRoute(
     memberId: Long,
-    viewModel: SignInViewModel = hiltViewModel()
+    viewModel: SignInViewModel = hiltViewModel(),
+    // 🚀 수정: 음악 상세 화면 네비게이션 콜백 추가
+    onNavigateToMusicDetail: (Long) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -112,6 +116,9 @@ fun PhotoUploadRoute(
 
     // HistoryScreen에서 사용할 PostViewModel을 hiltViewModel로 주입받습니다.
     val historyViewModel: PostViewModel = hiltViewModel()
+
+    // MusicScreen에서 사용할 ViewModel을 hiltViewModel로 주입받습니다. (PhotoUploadRoute의 ViewModel과 분리)
+    val musicViewModel: SignInViewModel = hiltViewModel()
 
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -174,14 +181,22 @@ fun PhotoUploadRoute(
                 )
             }
             3 -> {
-                // 음악 화면 (미구현 -> MusicScreen으로 대체되어야 함)
                 Box(
                     modifier = Modifier
                         .padding(paddingValues)
                         .fillMaxSize()
-                        .background(GwangSanColor.white),
-                    contentAlignment = Alignment.Center
-                ) { Text("음악 추천 화면 (미구현)") }
+                        .background(GwangSanColor.gray100)
+                ) {
+                    MusicScreen(
+                        viewModel = musicViewModel,
+                        selectedIndex = selectedIndex,
+                        onItemSelected = { index -> selectedIndex = index },
+                        memberId = memberId,
+                        onNavigateToDetails = { playlist: PlaylistModel ->
+                            onNavigateToMusicDetail(playlist.id)
+                        }
+                    )
+                }
             }
             4 -> { // 기록
                 Box(
@@ -853,24 +868,20 @@ fun AnalysisContent(
 
                             Spacer(modifier = Modifier.height(16.dp))
 
+                            // Music 탭으로 이동하는 버튼 (onMusicClick 콜백 실행)
                             Button(
                                 onClick = onMusicClick,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colors.subPOPule,
-                                    contentColor = colors.white
+                                    contentColor = colors.white,
                                 ),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(56.dp)
                             ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.music_icon),
-                                    contentDescription = "음악",
-                                    modifier = Modifier.size(18.dp)
-                                )
                                 Text(
-                                    text = "  음악 추천받기",
+                                    text = "분석 기반 음악 추천 받기",
                                     style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
                                 )
                             }
