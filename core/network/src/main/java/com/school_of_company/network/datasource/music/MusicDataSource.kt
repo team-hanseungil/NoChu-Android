@@ -1,3 +1,5 @@
+package com.school_of_company.network.datasource.music
+
 import com.school_of_company.network.dto.music.response.PlaylistDetailResponse // <-- import 추가
 import com.school_of_company.network.dto.music.response.PlaylistListResponse
 import kotlinx.coroutines.flow.Flow
