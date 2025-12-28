@@ -5,7 +5,16 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -13,7 +22,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -83,25 +96,27 @@ fun lPlaylistDetailContent(
     val context = LocalContext.current
 
     fun playTrack(track: TrackModel) {
-        track.previewUrl?.let { url ->
-            try {
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse(url)
-                    setDataAndType(Uri.parse(url), "audio/*")
-                }
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(
-                    context,
-                    "음악을 재생할 수 없습니다",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        } ?: Toast.makeText(
-            context,
-            "미리듣기를 제공하지 않는 곡입니다",
-            Toast.LENGTH_SHORT
-        ).show()
+        val url = track.previewUrl
+
+        if (url.isNullOrBlank()) {
+            Toast.makeText(
+                context,
+                "재생할 수 있는 URL이 없습니다",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(
+                context,
+                "링크를 열 수 없습니다",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     fun playAll(tracks: List<TrackModel>) {
@@ -162,7 +177,7 @@ fun lPlaylistDetailContent(
 
         is MusicRR.Error -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         "상세 정보 로딩 실패",
                         color = colors.error,
@@ -219,7 +234,7 @@ fun lDetailHeaderSection(
             )
         }
 
-        Column(
+        androidx.compose.foundation.layout.Column(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = 32.dp),
@@ -356,7 +371,7 @@ fun lTrackItem(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
+        androidx.compose.foundation.layout.Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = track.title,
                 style = typography.body2.copy(fontWeight = FontWeight.SemiBold),
@@ -384,3 +399,4 @@ fun lTrackItem(
         )
     }
 }
+
