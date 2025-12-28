@@ -7,10 +7,10 @@ import com.school_of_company.model.music.response.PlaylistListModel
  */
 sealed interface MusicUiState {
     // 초기 상태 또는 데이터 로딩 중
-    object Loading : MusicUiState
+    data object Loading : MusicUiState
 
     // 유휴 상태 (아직 로드 시도가 없거나 초기화된 상태)
-    object Idle : MusicUiState
+    data object Idle : MusicUiState
 
     // 데이터 로딩 성공
     data class Success(val playlistList: PlaylistListModel) : MusicUiState

@@ -1,7 +1,7 @@
 package com.school_of_company.network.datasource.post
 
 import com.school_of_company.network.api.EmotionAPI
-import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
+import com.school_of_company.network.dto.post.response.EmotionHistoryResponse
 import com.school_of_company.network.util.performApiRequest
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

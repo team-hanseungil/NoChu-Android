@@ -1,5 +1,11 @@
 package com.school_of_company.signin.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -7,29 +13,25 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.school_of_company.nochumain.PhotoUploadRoute
+import com.school_of_company.signin.view.PlaylistDetailContent
 import com.school_of_company.signin.view.SignInRoute
+import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signup.view.SignUpScreen
 
 const val StartRoute = "Start_route"
 const val SignInRoute = "Sign_in_route"
 const val SignUpRoute = "Sign_up_route"
 
-// ✅ PhotoFace (메인 탭 화면) Route 정의
 const val PhotoFaceRoute = "Photo_face_route"
 private const val MEMBER_ID_ARG = "memberId"
 private const val PhotoFaceRouteWithArg = "$PhotoFaceRoute/{$MEMBER_ID_ARG}"
 
-// ======================================================
-// 🚀 음악 상세 화면 (Music Detail) Route 정의 및 Nav 통합
-// ======================================================
-
 const val MUSIC_DETAIL_ID_ARG = "playlistId"
-const val MUSIC_DETAIL_ROUTE = "music_detail_route/{$MUSIC_DETAIL_ID_ARG}" // 상세 화면 경로
+const val MUSIC_DETAIL_ROUTE = "music_detail_route/{$MUSIC_DETAIL_ID_ARG}"
 
-/**
- * [NavGraphBuilder] 확장 함수: 음악 상세 화면을 네비게이션 그래프에 등록합니다.
- */
-fun NavGraphBuilder.musicDetailScreen() {
+fun NavGraphBuilder.musicDetailScreen(
+    onBackClick: () -> Unit
+) {
     composable(
         route = MUSIC_DETAIL_ROUTE,
         arguments = listOf(
@@ -37,23 +39,41 @@ fun NavGraphBuilder.musicDetailScreen() {
         )
     ) { backStackEntry ->
         val playlistId = backStackEntry.arguments?.getLong(MUSIC_DETAIL_ID_ARG) ?: 0L
+        val viewModel: SignInViewModel = hiltViewModel()
+        val detailUiState = viewModel.playlistDetailUiState.collectAsState()
 
-        // TODO: MusicDetailScreen 컴포저블을 호출하고 playlistId를 넘겨줍니다.
-        // 예: MusicDetailScreen(playlistId = playlistId)
+        LaunchedEffect(playlistId) {
+            viewModel.fetchPlaylistDetail(playlistId)
+        }
+
+        com.school_of_company.design_system.theme.GwangSanTheme { colors, typography ->
+            androidx.compose.material3.Scaffold(
+                containerColor = colors.gray100
+            ) { paddingValues ->
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxSize()
+                ) {
+                    PlaylistDetailContent(
+                        colors = colors,
+                        typography = typography,
+                        playlistId = playlistId,
+                        uiState = detailUiState.value,
+                        onBackClicked = onBackClick
+                    )
+                }
+            }
+        }
     }
 }
 
-/**
- * [NavController] 확장 함수: 음악 상세 화면으로 이동합니다.
- */
 fun NavController.navigateToMusicDetail(playlistId: Long, navOptions: NavOptions? = null) {
-    this.navigate(MUSIC_DETAIL_ROUTE.replace("{$MUSIC_DETAIL_ID_ARG}", playlistId.toString()), navOptions)
+    this.navigate(
+        MUSIC_DETAIL_ROUTE.replace("{$MUSIC_DETAIL_ID_ARG}", playlistId.toString()),
+        navOptions
+    )
 }
-
-
-// ======================================================
-// ✅ 기존 로그인/회원가입 네비게이션 (변경 없음)
-// ======================================================
 
 fun NavController.navigateToStart(navOptions: NavOptions? = null) {
     this.navigate(StartRoute, navOptions)
@@ -64,7 +84,7 @@ fun NavGraphBuilder.startScreen(
     onInputLoginClick: () -> Unit,
 ) {
     composable(route = StartRoute) {
-        // StartRoute( onSignUpClick = onSignUpClick, onInputLoginClick = onInputLoginClick )
+
     }
 }
 
@@ -74,7 +94,7 @@ fun NavController.navigateToSignIn(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.signInScreen(
     onBackClick: () -> Unit,
-    onMainClick: (Long) -> Unit, // 로그인 성공 시 memberId 전달
+    onMainClick: (Long) -> Unit,
     onErrorToast: (throwable: Throwable?, message: Int?) -> Unit,
     onSignUpClick: () -> Unit
 ) {
@@ -82,7 +102,6 @@ fun NavGraphBuilder.signInScreen(
         SignInRoute(
             onBackClick = onBackClick,
             onErrorToast = onErrorToast,
-            // onMainClick: 로그인 성공 시 memberId를 전달하여 PhotoScreen으로 이동
             onMainClick = onMainClick,
             onSignUpClick = onSignUpClick
         )
@@ -107,37 +126,29 @@ fun NavGraphBuilder.signUpScreen(
     }
 }
 
-// ======================================================
-// ✅ PhotoFace (PhotoScreen) 네비게이션 (수정 필요)
-// ======================================================
-
 fun NavController.navigateToPhotoFace(
     memberId: Long,
     navOptions: NavOptions? = null
 ) {
-    // memberId를 URL 인자로 삽입하여 네비게이션 수행
     this.navigate("$PhotoFaceRoute/$memberId", navOptions)
 }
 
 fun NavGraphBuilder.photoFaceScreen(
     onBackClick: () -> Unit,
-    // ⚠️ 수정: Music Detail로 이동하는 콜백 추가
     onNavigateToMusicDetail: (Long) -> Unit
 ) {
     composable(
         route = PhotoFaceRouteWithArg,
         arguments = listOf(
             navArgument(MEMBER_ID_ARG) {
-                type = NavType.LongType // 인자 타입 Long 명시
+                type = NavType.LongType
             }
         )
     ) { backStackEntry ->
-        // LongType으로 인자를 가져옴.
         val memberId = backStackEntry.arguments?.getLong(MEMBER_ID_ARG) ?: 0L
 
         PhotoUploadRoute(
             memberId = memberId,
-            // ⚠️ 콜백 전달
             onNavigateToMusicDetail = onNavigateToMusicDetail
         )
     }

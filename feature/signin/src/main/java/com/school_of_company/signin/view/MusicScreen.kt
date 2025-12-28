@@ -29,8 +29,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.school_of_company.design_system.R
-import com.school_of_company.design_system.component.nochubottombar.NoChuNavigationBar
-import com.school_of_company.design_system.component.nochubottombar.NoChuNavigationBarItem
 import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.design_system.theme.GwangSanTypography
 import com.school_of_company.design_system.theme.color.ColorTheme
@@ -42,9 +40,6 @@ import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.MusicUiState
 import com.school_of_company.signin.viewmodel.uistate.PlaylistDetailUiState
 
-/**
- * 음악 화면 통합 Wrapper: 목록과 상세 화면 전환을 담당하며, 모든 Compose 컴포넌트를 포함합니다.
- */
 @Composable
 fun MusicScreen(
     viewModel: SignInViewModel = viewModel(),
@@ -58,51 +53,48 @@ fun MusicScreen(
     val detailUiState by viewModel.playlistDetailUiState.collectAsState()
 
     LaunchedEffect(memberId) {
-        if (listUiState is MusicUiState.Idle) {
-            viewModel.fetchPlaylists(memberId)
-        }
+        android.util.Log.d("MusicScreen", "Fetching playlists for memberId: $memberId")
+        viewModel.fetchPlaylists(memberId)
     }
 
     LaunchedEffect(selectedPlaylistId) {
         if (selectedPlaylistId != 0L) {
+            android.util.Log.d("MusicScreen", "Fetching playlist detail for id: $selectedPlaylistId")
             viewModel.fetchPlaylistDetail(selectedPlaylistId)
         }
     }
 
+    LaunchedEffect(listUiState) {
+        android.util.Log.d("MusicScreen", "UI State changed: $listUiState")
+    }
+
     GwangSanTheme { colors, typography ->
-        Scaffold(
-            bottomBar = {
-                if (selectedPlaylistId == 0L) {
-                    NoChuBottombarContent(selectedIndex, onItemSelected, colors, typography)
-                }
-            },
-            containerColor = colors.gray100
-        ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-                if (selectedPlaylistId == 0L) {
-                    MusicScreenContent(
-                        colors = colors,
-                        typography = typography,
-                        uiState = listUiState,
-                        onNavigateToDetails = onNavigateToDetails
-                    )
-                } else {
-                    PlaylistDetailContent(
-                        colors = colors,
-                        typography = typography,
-                        playlistId = selectedPlaylistId,
-                        uiState = detailUiState,
-                        onBackClicked = { selectedPlaylistId = 0L }
-                    )
-                }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colors.gray100)
+        ) {
+            if (selectedPlaylistId == 0L) {
+                MusicScreenContent(
+                    colors = colors,
+                    typography = typography,
+                    uiState = listUiState,
+                    onNavigateToDetails = { playlist ->
+                        selectedPlaylistId = playlist.id
+                    }
+                )
+            } else {
+                PlaylistDetailContent(
+                    colors = colors,
+                    typography = typography,
+                    playlistId = selectedPlaylistId,
+                    uiState = detailUiState,
+                    onBackClicked = { selectedPlaylistId = 0L }
+                )
             }
         }
     }
 }
-
-// ====================================================================
-// --- 1. Music Screen List Components (목록 화면) ---
-// ====================================================================
 
 @Composable
 fun MusicScreenContent(
@@ -137,15 +129,30 @@ fun MusicScreenContent(
 
         when (uiState) {
             MusicUiState.Loading, MusicUiState.Idle -> {
+                android.util.Log.d("MusicScreenContent", "State: Loading or Idle")
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = colors.purple)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "플레이리스트 불러오는 중...",
+                            color = colors.gray700,
+                            style = typography.body5
+                        )
+                    }
                 }
             }
             is MusicUiState.Success -> {
                 val playlists = uiState.playlistList.playlists
+                android.util.Log.d("MusicScreenContent", "Success: ${playlists.size} playlists loaded")
 
                 if (playlists.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
                             text = "추천 플레이리스트가 아직 없습니다.",
                             color = colors.gray700,
@@ -170,8 +177,37 @@ fun MusicScreenContent(
                 }
             }
             is MusicUiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("플레이리스트 로딩 실패: ${uiState.exception.message}", color = colors.error)
+                android.util.Log.e("MusicScreenContent", "Error: ${uiState.exception.message}", uiState.exception)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "플레이리스트 로딩 실패",
+                            color = colors.error,
+                            style = typography.body3
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = uiState.exception.message ?: "알 수 없는 오류",
+                            color = colors.gray700,
+                            style = typography.body5
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                android.util.Log.d("MusicScreenContent", "Retry button clicked")
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colors.purple
+                            )
+                        ) {
+                            Text("다시 시도")
+                        }
+                    }
                 }
             }
         }
@@ -218,7 +254,7 @@ fun PlaylistListItem(
             }
 
             Icon(
-                painter = painterResource(id = R.drawable.music_icon),
+                painter = painterResource(id = R.drawable.arrow_down),
                 contentDescription = "다음",
                 tint = colors.gray500,
                 modifier = Modifier.size(24.dp)
@@ -259,59 +295,6 @@ fun getEmotionGradientColors(emotion: String, colors: ColorTheme): List<Color> {
 }
 
 @Composable
-private fun NoChuBottombarContent(
-    selectedIndex: Int,
-    onItemSelected: (Int) -> Unit,
-    colors: ColorTheme,
-    typography: GwangSanTypography
-) {
-    val items = listOf("홈", "사진", "분석", "음악", "기록")
-    val icons = listOf(
-        R.drawable.home,
-        R.drawable.camera_icon,
-        R.drawable.chartbar_icon,
-        R.drawable.music_icon,
-        R.drawable.history_icon,
-    )
-
-    NoChuNavigationBar {
-        items.forEachIndexed { index, item ->
-            val isSelected = index == selectedIndex
-            val iconRes = icons[index]
-
-            NoChuNavigationBarItem(
-                icon = {
-                    Icon(
-                        painter = painterResource(id = iconRes),
-                        contentDescription = item,
-                        tint = colors.gray500
-                    )
-                },
-                selectedIcon = {
-                    Icon(
-                        painter = painterResource(id = iconRes),
-                        contentDescription = item,
-                        tint = colors.purple
-                    )
-                },
-                label = {
-                    Text(
-                        text = item,
-                        style = typography.label
-                    )
-                },
-                selected = isSelected,
-                onClick = { onItemSelected(index) },
-            )
-        }
-    }
-}
-
-// ====================================================================
-// --- 2. Music Detail Components (상세 화면) ---
-// ====================================================================
-
-@Composable
 fun PlaylistDetailContent(
     colors: ColorTheme,
     typography: GwangSanTypography,
@@ -321,7 +304,6 @@ fun PlaylistDetailContent(
 ) {
     val context = LocalContext.current
 
-    // 개별 트랙 재생 함수
     fun playTrack(track: TrackModel) {
         track.previewUrl?.let { url ->
             try {
@@ -344,7 +326,6 @@ fun PlaylistDetailContent(
         ).show()
     }
 
-    // 전체 재생 함수 (첫 번째 곡부터 재생)
     fun playAll(tracks: List<TrackModel>) {
         if (tracks.isNotEmpty()) {
             playTrack(tracks[0])
@@ -617,35 +598,85 @@ fun TrackItem(
     }
 }
 
-// ====================================================================
-// --- 3. Preview Components ---
-// ====================================================================
-
-@Preview(showBackground = true, name = "Playlist Detail Screen Preview")
+@Preview(showBackground = true, name = "Music Screen with Playlists")
 @Composable
-fun PreviewPlaylistDetailScreen() {
+fun PreviewMusicScreen() {
+    val mockPlaylists = listOf(
+        PlaylistModel(
+            id = 1L,
+            title = "행복한 하루",
+            emotion = "HAPPY",
+            imageUrl = "https://example.com/happy.jpg",
+            trackCount = 15L,
+            createdAt = "2024-01-01"
+        ),
+        PlaylistModel(
+            id = 2L,
+            title = "차분한 밤",
+            emotion = "SAD",
+            imageUrl = "https://example.com/sad.jpg",
+            trackCount = 12L,
+            createdAt = "2024-01-02"
+        ),
+        PlaylistModel(
+            id = 3L,
+            title = "활기찬 아침",
+            emotion = "SURPRISE",
+            imageUrl = "https://example.com/surprise.jpg",
+            trackCount = 20L,
+            createdAt = "2024-01-03"
+        )
+    )
+
+    GwangSanTheme { colors, typography ->
+        MusicScreenContent(
+            colors = colors,
+            typography = typography,
+            uiState = MusicUiState.Success(PlaylistListModel(mockPlaylists)),
+            onNavigateToDetails = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Playlist Detail Preview")
+@Composable
+fun PreviewPlaylistDetail() {
     val mockDetail = PlaylistDetailModel(
         id = 1L,
         title = "행복한 당신을 위한 플레이리스트",
         imageUrl = "https://example.com/happy_cover.jpg",
         tracks = listOf(
-            TrackModel(listOf("Pharrell Williams"), "Happy", "https://example.com/album1.jpg", "https://example.com/preview1.mp3", "3:53"),
-            TrackModel(listOf("Dua Lipa"), "Good Vibes", "https://example.com/album2.jpg", "https://example.com/preview2.mp3", "3:42"),
-            TrackModel(listOf("Bruno Mars"), "Uptown Funk", "https://example.com/album3.jpg", "https://example.com/preview3.mp3", "4:30"),
-            TrackModel(listOf("Ed Sheeran"), "Shape of You", "https://example.com/album4.jpg", "https://example.com/preview4.mp3", "3:53"),
-            TrackModel(listOf("Mark Ronson"), "Feel Right", "https://example.com/album5.jpg", "https://example.com/preview5.mp3", "4:23"),
+            TrackModel(
+                artists = listOf("Pharrell Williams"),
+                title = "Happy",
+                imageUrl = "https://example.com/album1.jpg",
+                previewUrl = "https://example.com/preview1.mp3",
+                duration = "3:53"
+            ),
+            TrackModel(
+                artists = listOf("Dua Lipa"),
+                title = "Good Vibes",
+                imageUrl = "https://example.com/album2.jpg",
+                previewUrl = "https://example.com/preview2.mp3",
+                duration = "3:42"
+            ),
+            TrackModel(
+                artists = listOf("Bruno Mars"),
+                title = "Uptown Funk",
+                imageUrl = "https://example.com/album3.jpg",
+                previewUrl = "https://example.com/preview3.mp3",
+                duration = "4:30"
+            )
         )
     )
 
     GwangSanTheme { colors, typography ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            PlaylistDetailContent(
-                colors = colors,
-                typography = typography,
-                playlistId = 1L,
-                uiState = PlaylistDetailUiState.Success(mockDetail),
-                onBackClicked = {}
-            )
-        }
+        PlaylistDetailContent(
+            colors = colors,
+            typography = typography,
+            playlistId = 1L,
+            uiState = PlaylistDetailUiState.Success(mockDetail),
+            onBackClicked = {}
+        )
     }
 }

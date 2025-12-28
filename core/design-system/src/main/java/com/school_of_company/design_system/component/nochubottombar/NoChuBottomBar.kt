@@ -78,10 +78,9 @@ private fun NavigationContent(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit
 ) {
-    val items = listOf("홈", "사진", "분석", "음악", "기록")
+    val items = listOf("사진", "분석", "음악", "기록")
 
     val icons = listOf(
-        R.drawable.home ,
         R.drawable.camera_icon,
         R.drawable.chartbar_icon,
         R.drawable.music_icon,

@@ -4,8 +4,7 @@ import com.school_of_company.network.dto.post.request.PostAllRequest
 import com.school_of_company.network.dto.post.request.TransactionCompleteRequest
 import com.school_of_company.network.dto.post.response.AllPostDto
 import com.school_of_company.network.dto.post.response.PostDto
-import com.school_of_company.network.dto.post.response.PostModifyResponse
-import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
+import com.school_of_company.network.dto.post.response.EmotionHistoryResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST

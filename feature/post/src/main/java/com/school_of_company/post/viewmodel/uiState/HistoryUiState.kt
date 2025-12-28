@@ -1,6 +1,6 @@
 package com.school_of_company.post.viewmodel.uiState
 
-import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
+import com.school_of_company.network.dto.post.response.EmotionHistoryResponse
 
 sealed interface HistoryUiState {
     /** 데이터를 불러오는 중 */
