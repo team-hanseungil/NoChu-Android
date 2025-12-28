@@ -22,8 +22,8 @@ import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.design_system.theme.color.ColorTheme
 import com.school_of_company.design_system.theme.color.GwangSanColor
 import com.school_of_company.design_system.theme.GwangSanTypography
-import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
-import com.school_of_company.network.dto.reponse.EmotionRecordResponse
+import com.school_of_company.network.dto.post.response.EmotionHistoryResponse
+import com.school_of_company.network.dto.post.response.EmotionRecordResponse
 import com.school_of_company.post.viewmodel.PostViewModel
 import com.school_of_company.post.viewmodel.uiState.HistoryUiState
 import java.time.LocalDate
@@ -31,7 +31,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Locale
 
-const val DEFAULT_EMOJI = "❓"
+const val DEFAULT_EMOJI = "😶" // 중립적인 얼굴로 변경
 const val EMOJI_SIZE = 40.0 // 40.sp
 
 const val EMOJI_CONTAINER_SIZE = 56.0 // 56.dp

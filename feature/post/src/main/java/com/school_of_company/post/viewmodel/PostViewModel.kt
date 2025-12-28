@@ -8,11 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.school_of_company.data.repository.image.ImageRepository
 import com.school_of_company.data.repository.post.EmotionRepository
+import com.school_of_company.data.repository.post.PostRepository
+import com.school_of_company.data.repository.music.MusicRepository // 👈 1. MusicRepository 사용
 import com.school_of_company.model.enum.Mode
 import com.school_of_company.model.enum.Type
+import com.school_of_company.model.music.response.PlaylistListModel // 👈 2. PlaylistListModel 사용
 import com.school_of_company.network.errorHandling
 import com.school_of_company.result.asResult
-import com.school_of_company.data.repository.post.PostRepository
 import com.school_of_company.model.post.request.PostAllRequestModel
 import com.school_of_company.post.util.getMultipartFile
 import com.school_of_company.post.viewmodel.uiState.HistoryUiState
@@ -32,14 +34,31 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import java.lang.IllegalArgumentException
 
+// ----------------------------------------------------------------------
+// 👈 3. PlaylistUiState를 도메인 모델(PlaylistListModel) 사용하도록 수정
+// ----------------------------------------------------------------------
+sealed interface PlaylistUiState {
+    data object Loading : PlaylistUiState
+    data class Success(val response: PlaylistListModel) : PlaylistUiState
+    data object Empty : PlaylistUiState
+    data class Error(val message: String) : PlaylistUiState
+}
+
+// ----------------------------------------------------------------------
+// 🚨 이전 코드에서 제거된 부분: 임시로 정의했던 PlaylistRepository 인터페이스
+// ----------------------------------------------------------------------
+
+
 @HiltViewModel
 class PostViewModel @Inject constructor(
     private val postRepository: PostRepository,
     private val imageRepository: ImageRepository,
-    private val emotionRepository: EmotionRepository, // EmotionRepository 주입
+    private val emotionRepository: EmotionRepository,
+    private val musicRepository: MusicRepository, // 👈 4. MusicRepository 주입
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     companion object {
+        private const val TAG = "PostViewModel" // Log TAG 추가
         private const val TITLE = "title"
         private const val CONTENT = "content"
         private const val GWANGSAN = "gwangsan"
@@ -80,6 +99,11 @@ class PostViewModel @Inject constructor(
         MutableStateFlow<HistoryUiState>(HistoryUiState.Loading)
     val emotionHistoryUiState: StateFlow<HistoryUiState> = _emotionHistoryUiState.asStateFlow()
 
+    // 👈 5. 플레이리스트 UI 상태 Flow
+    private val _playlistUiState = MutableStateFlow<PlaylistUiState>(PlaylistUiState.Loading)
+    val playlistUiState: StateFlow<PlaylistUiState> = _playlistUiState.asStateFlow()
+
+
     internal val title = savedStateHandle.getStateFlow(TITLE, "")
     internal val content = savedStateHandle.getStateFlow(CONTENT, "")
     internal val gwangsan = savedStateHandle.getStateFlow(GWANGSAN, "")
@@ -100,9 +124,15 @@ class PostViewModel @Inject constructor(
         emotionRepository.getEmotionHistory(memberId)
             .onStart { _emotionHistoryUiState.value = HistoryUiState.Loading }
             .catch { e ->
+                Log.e(TAG, "Error loading history: ${e.message}", e)
                 _emotionHistoryUiState.value = HistoryUiState.Error(e.message ?: "감정 기록 로드 중 알 수 없는 오류 발생")
             }
             .collect { response ->
+                Log.d(TAG, "Total Records: ${response.totalRecords}, Avg Confidence: ${response.averageConfidence}%")
+                response.emotions.forEachIndexed { index, record ->
+                    Log.d("EmotionRecord", "Record $index: Date=${record.date}, Emotion=${record.emotion}, Confidence=${record.confidence}%")
+                }
+
                 if (response.emotions.isEmpty()) {
                     _emotionHistoryUiState.value = HistoryUiState.Empty
                 } else {
@@ -111,11 +141,32 @@ class PostViewModel @Inject constructor(
             }
     }
 
+    /**
+     * 👈 6. 플레이리스트 데이터를 로드하고 UI 상태를 업데이트합니다. (MusicRepository 사용)
+     */
+    fun loadPlaylists(memberId: Long) = viewModelScope.launch {
+        musicRepository.getPlaylists(memberId) // MusicRepository의 getPlaylists 호출
+            .onStart { _playlistUiState.value = PlaylistUiState.Loading }
+            .catch { e ->
+                Log.e(TAG, "Error loading playlists: ${e.message}", e)
+                _playlistUiState.value = PlaylistUiState.Error(e.message ?: "플레이리스트 로드 중 알 수 없는 오류 발생")
+            }
+            .collect { response -> // response는 PlaylistListModel 타입입니다.
+                if (response.playlists.isEmpty()) {
+                    _playlistUiState.value = PlaylistUiState.Empty
+                } else {
+                    Log.d(TAG, "Loaded ${response.playlists.size} playlists.")
+                    _playlistUiState.value = PlaylistUiState.Success(response)
+                }
+            }
+    }
+
+
     internal fun loadPostForEdit(postId: Long) = viewModelScope.launch {
         _postUiState.value = PostUiState.Loading
         _isEditMode.value = true
         _editPostId.value = postId
-
+        // ... (기존 loadPostForEdit 로직 유지)
         postRepository.getSpecificInformation(postId = postId)
             .asResult()
             .collectLatest { result ->
@@ -163,7 +214,7 @@ class PostViewModel @Inject constructor(
             _postUiState.value = PostUiState.Error(IllegalArgumentException("빈 값 존재"))
             return@launch
         }
-
+        // ... (기존 modifyPost 로직 유지)
         _modifyPostUiStat.value = ModifyPostUiState.Loading
         try {
             postRepository.modifyPostInformation(
@@ -204,7 +255,7 @@ class PostViewModel @Inject constructor(
             _postUiState.value = PostUiState.Error(IllegalArgumentException("빈 값 존재"))
             return@launch
         }
-
+        // ... (기존 writePost 로직 유지)
         _postUiState.value = PostUiState.Loading
         postRepository.writePostInformation(
             body = PostAllRequestModel(
@@ -239,7 +290,7 @@ class PostViewModel @Inject constructor(
             ?: throw IllegalStateException("이미지 파일 변환 실패")
 
         var imageId: Long = -1
-
+        // ... (기존 imageUpLoad 로직 유지)
         imageRepository.imageUpLoad(multipartFile)
             .asResult()
             .collectLatest { result ->
@@ -271,7 +322,6 @@ class PostViewModel @Inject constructor(
             savedStateHandle[IMAGE_IDS] = ids
         }
     }
-
 
     internal fun removeNewImage(index: Int) {
         val currentImages = _selectedImages.value.toMutableList()

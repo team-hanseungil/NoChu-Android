@@ -1,4 +1,4 @@
-package com.school_of_company.network.dto.reponse
+package com.school_of_company.network.dto.post.response
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

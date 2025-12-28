@@ -62,9 +62,8 @@ import com.school_of_company.design_system.theme.GwangSanTypography
 import com.school_of_company.design_system.theme.color.ColorTheme
 import com.school_of_company.design_system.theme.color.GwangSanColor
 import com.school_of_company.model.auth.request.EmotionResponseModel
-import com.school_of_company.model.music.response.PlaylistModel
-import com.school_of_company.network.dto.reponse.EmotionHistoryResponse
-import com.school_of_company.network.dto.reponse.EmotionRecordResponse
+import com.school_of_company.network.dto.post.response.EmotionHistoryResponse
+import com.school_of_company.network.dto.post.response.EmotionRecordResponse
 import com.school_of_company.post.viewmodel.PostViewModel
 import com.school_of_company.post.viewmodel.uiState.HistoryUiState
 import com.school_of_company.signin.view.MusicScreen
@@ -103,29 +102,23 @@ val emotionEmojis: Map<String, String> = mapOf(
 fun PhotoUploadRoute(
     memberId: Long,
     viewModel: SignInViewModel = hiltViewModel(),
-    // 🚀 수정: 음악 상세 화면 네비게이션 콜백 추가
     onNavigateToMusicDetail: (Long) -> Unit
 ) {
     val context = LocalContext.current
 
-    // "사진"은 인덱스 1, "기록"은 인덱스 4
     var selectedIndex by remember { mutableIntStateOf(1) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val uiState by viewModel.postFaceUiState.collectAsState()
 
-    // HistoryScreen에서 사용할 PostViewModel을 hiltViewModel로 주입받습니다.
     val historyViewModel: PostViewModel = hiltViewModel()
-
-    // MusicScreen에서 사용할 ViewModel을 hiltViewModel로 주입받습니다. (PhotoUploadRoute의 ViewModel과 분리)
-    val musicViewModel: SignInViewModel = hiltViewModel()
 
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             selectedImageUri = uri
             if (uri != null) {
                 viewModel.resetPostFaceState()
-                selectedIndex = 1 // 이미지 선택 후 다시 사진 업로드 탭으로 돌아옵니다.
+                selectedIndex = 1
             }
         }
 
@@ -135,7 +128,6 @@ fun PhotoUploadRoute(
                 selectedIndex = selectedIndex,
                 onItemSelected = { index ->
                     selectedIndex = index
-                    // History 탭이 선택되었을 때만 데이터 로드를 시작합니다.
                     if (index == 4) {
                         historyViewModel.loadEmotionHistory(memberId)
                     }
@@ -144,17 +136,7 @@ fun PhotoUploadRoute(
         }
     ) { paddingValues ->
         when (selectedIndex) {
-            0 -> {
-                // 홈 화면 (미구현)
-                Box(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize()
-                        .background(GwangSanColor.white),
-                    contentAlignment = Alignment.Center
-                ) { Text("홈 화면 (미구현)") }
-            }
-            1 -> { // 사진 업로드
+            1 -> {
                 PhotoUploadContent(
                     modifier = Modifier.padding(paddingValues),
                     selectedImageUri = selectedImageUri,
@@ -171,13 +153,13 @@ fun PhotoUploadRoute(
                     }
                 )
             }
-            2 -> { // 분석
+            2 -> {
                 AnalysisContent(
                     modifier = Modifier.padding(paddingValues),
                     selectedImageUri = selectedImageUri,
                     uiState = uiState,
                     onGoPickAgain = { selectedIndex = 1 },
-                    onMusicClick = { selectedIndex = 3 } // 음악 탭으로 이동
+                    onMusicClick = { selectedIndex = 3 }
                 )
             }
             3 -> {
@@ -188,17 +170,15 @@ fun PhotoUploadRoute(
                         .background(GwangSanColor.gray100)
                 ) {
                     MusicScreen(
-                        viewModel = musicViewModel,
+                        viewModel = viewModel,
                         selectedIndex = selectedIndex,
                         onItemSelected = { index -> selectedIndex = index },
                         memberId = memberId,
-                        onNavigateToDetails = { playlist: PlaylistModel ->
-                            onNavigateToMusicDetail(playlist.id)
-                        }
+                        onNavigateToDetails = {}
                     )
                 }
             }
-            4 -> { // 기록
+            4 -> {
                 Box(
                     modifier = Modifier
                         .padding(paddingValues)
