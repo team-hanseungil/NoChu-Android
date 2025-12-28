@@ -42,6 +42,7 @@ import com.school_of_company.model.auth.request.PlaylistResponseModel
 import com.school_of_company.model.auth.request.TrackModel
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.MusicRR
+import androidx.core.net.toUri
 
 @Composable
 fun MusicScreen(
@@ -83,25 +84,34 @@ fun lPlaylistDetailContent(
     val context = LocalContext.current
 
     fun playTrack(track: TrackModel) {
-        track.previewUrl?.let { url ->
-            try {
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse(url)
-                    setDataAndType(Uri.parse(url), "audio/*")
-                }
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(
-                    context,
-                    "음악을 재생할 수 없습니다",
-                    Toast.LENGTH_SHORT
-                ).show()
+        val url = track.previewUrl
+
+        android.util.Log.d("PlayDebug", "Track Title: ${track.title}, URL Value: '$url'")
+
+        if (url.isNullOrBlank()) { // null/blank 체크는 유지하는 것이 좋습니다.
+            Toast.makeText(
+                context,
+                "재생할 수 있는 URL이 없습니다",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        try {
+            // 🚨 수정: setDataAndType 대신 Uri만 전달하여 시스템이 타입을 추론하도록 합니다.
+            // 그리고 복잡한 플래그들을 모두 제거하고 가장 단순하게 만듭니다.
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
+                // 다른 앱의 새 태스크에서 열리도록 NEW_TASK 플래그만 유지합니다.
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
-        } ?: Toast.makeText(
-            context,
-            "미리듣기를 제공하지 않는 곡입니다",
-            Toast.LENGTH_SHORT
-        ).show()
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(
+                context,
+                "링크를 열 수 없습니다", // 토스트 메시지도 더 일반적인 것으로 변경했습니다.
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     fun playAll(tracks: List<TrackModel>) {
