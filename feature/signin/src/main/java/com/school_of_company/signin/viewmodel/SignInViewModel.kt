@@ -19,6 +19,7 @@ import com.school_of_company.network.util.DeviceIdManager
 import com.school_of_company.post.viewmodel.uiState.ImageUpLoadUiState
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
+import com.school_of_company.signin.viewmodel.uistate.MusicRR
 import com.school_of_company.signin.viewmodel.uistate.MusicUiState
 import com.school_of_company.signin.viewmodel.uistate.PlaylistDetailUiState // 상세 UI 상태 import
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
@@ -54,6 +55,10 @@ class SignInViewModel @Inject constructor(
     private val _signInUiState = MutableStateFlow<SignInUiState>(SignInUiState.Loading)
     internal val signInUiState = _signInUiState.asStateFlow()
 
+    private val _musicRRState = MutableStateFlow<MusicRR>(MusicRR.Loading)
+    internal val musicRRState = _musicRRState.asStateFlow()
+
+
     private val _signUpUiState = MutableStateFlow<SignUpUiState>(SignUpUiState.Loading)
     internal val signUpUiState = _signUpUiState.asStateFlow()
 
@@ -85,6 +90,28 @@ class SignInViewModel @Inject constructor(
                         _musicUiState.value = MusicUiState.Error(result.exception)
                         Log.e(TAG, "Failed to fetch playlists: ${result.exception.message}")
                     }
+                }
+            }
+    }
+
+    internal fun musicRR(memberId: Long) = viewModelScope.launch {
+        authRepository.musicRR(memberId)
+            .asResult()
+            .collectLatest { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _musicRRState.value = MusicRR.Loading
+                    }
+
+                    is Result.Success -> {
+                        _musicRRState.value = MusicRR.Success(result.data)
+                    }
+
+                    is Result.Error -> {
+                        _musicRRState.value = MusicRR.Error(result.exception)
+                    }
+
+
                 }
             }
     }

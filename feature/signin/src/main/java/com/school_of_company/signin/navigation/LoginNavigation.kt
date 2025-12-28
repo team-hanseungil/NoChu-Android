@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import com.school_of_company.nochumain.PhotoUploadRoute
 import com.school_of_company.signin.view.PlaylistDetailContent
 import com.school_of_company.signin.view.SignInRoute
+import com.school_of_company.signin.view.lPlaylistDetailContent
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signup.view.SignUpScreen
 
@@ -26,9 +27,17 @@ const val PhotoFaceRoute = "Photo_face_route"
 private const val MEMBER_ID_ARG = "memberId"
 private const val PhotoFaceRouteWithArg = "$PhotoFaceRoute/{$MEMBER_ID_ARG}"
 
+// ✅ 기존: 상세 화면용
 const val MUSIC_DETAIL_ID_ARG = "playlistId"
 const val MUSIC_DETAIL_ROUTE = "music_detail_route/{$MUSIC_DETAIL_ID_ARG}"
 
+// ✅ 새로 추가: 감정 기반 음악 추천용 (musicrecommend)
+const val MUSIC_RECOMMEND_ROUTE = "musicrecommend"
+private const val MUSIC_RECOMMEND_MEMBER_ID_ARG = "memberId"
+private const val MUSIC_RECOMMEND_ROUTE_WITH_ARG =
+    "$MUSIC_RECOMMEND_ROUTE/{$MUSIC_RECOMMEND_MEMBER_ID_ARG}"
+
+// ───────────────────────── 상세 화면 ─────────────────────────
 fun NavGraphBuilder.musicDetailScreen(
     onBackClick: () -> Unit
 ) {
@@ -75,6 +84,63 @@ fun NavController.navigateToMusicDetail(playlistId: Long, navOptions: NavOptions
     )
 }
 
+// ───────────────────────── 감정 기반 음악 추천(musicrecommend) ─────────────────────────
+fun NavGraphBuilder.musicRecommendScreen(
+    onBackClick: () -> Unit
+) {
+    composable(
+        route = MUSIC_RECOMMEND_ROUTE_WITH_ARG,
+        arguments = listOf(
+            navArgument(MUSIC_RECOMMEND_MEMBER_ID_ARG) { type = NavType.LongType }
+        )
+    ) { backStackEntry ->
+        val memberId = backStackEntry.arguments?.getLong(MUSIC_RECOMMEND_MEMBER_ID_ARG) ?: 0L
+        val viewModel: SignInViewModel = hiltViewModel()
+        val detailUiState = viewModel.musicRRState.collectAsState()
+        // 👆 여기서 musicRR 결과를 PlaylistDetailUiState에 넣는 구조라고 가정
+
+        LaunchedEffect(memberId) {
+            viewModel.musicRR(memberId)
+        }
+
+        com.school_of_company.design_system.theme.GwangSanTheme { colors, typography ->
+            androidx.compose.material3.Scaffold(
+                containerColor = colors.gray100
+            ) { paddingValues ->
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxSize()
+                ) {
+                    // 👉 musicRR로 받은 "추천 플레이리스트 1개"를 상세 UI로 그대로 보여줌
+                    lPlaylistDetailContent(
+                        colors = colors,
+                        typography = typography,
+                        playlistId = 0L,
+                        uiState = detailUiState.value,
+                        onBackClicked = onBackClick
+                    )
+                }
+            }
+        }
+    }
+}
+
+// navController 확장 함수: musicrecommend로 이동
+fun NavController.navigateToMusicRecommend(
+    memberId: Long,
+    navOptions: NavOptions? = null
+) {
+    this.navigate(
+        MUSIC_RECOMMEND_ROUTE_WITH_ARG.replace(
+            "{$MUSIC_RECOMMEND_MEMBER_ID_ARG}",
+            memberId.toString()
+        ),
+        navOptions
+    )
+}
+
+// ───────────────────────── 기존 화면들 ─────────────────────────
 fun NavController.navigateToStart(navOptions: NavOptions? = null) {
     this.navigate(StartRoute, navOptions)
 }
@@ -135,7 +201,7 @@ fun NavController.navigateToPhotoFace(
 
 fun NavGraphBuilder.photoFaceScreen(
     onBackClick: () -> Unit,
-    onNavigateToMusicDetail: (Long) -> Unit
+    onNavigateToMusicRecommend: (Long) -> Unit
 ) {
     composable(
         route = PhotoFaceRouteWithArg,
@@ -149,7 +215,7 @@ fun NavGraphBuilder.photoFaceScreen(
 
         PhotoUploadRoute(
             memberId = memberId,
-            onNavigateToMusicDetail = onNavigateToMusicDetail
+            onNavigateToMusicRecommend = onNavigateToMusicRecommend
         )
     }
 }

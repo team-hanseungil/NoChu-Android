@@ -16,7 +16,9 @@ import com.school_of_company.common.UnKnownException
 import com.school_of_company.signin.navigation.StartRoute
 import com.school_of_company.signin.navigation.SignUpRoute
 import com.school_of_company.signin.navigation.musicDetailScreen
+import com.school_of_company.signin.navigation.musicRecommendScreen
 import com.school_of_company.signin.navigation.navigateToMusicDetail
+import com.school_of_company.signin.navigation.navigateToMusicRecommend
 import com.school_of_company.signin.navigation.navigateToPhotoFace
 import com.school_of_company.signin.navigation.photoFaceScreen
 import com.school_of_company.signin.navigation.signInScreen
@@ -69,12 +71,16 @@ fun GwangsanNavHost(
 
         photoFaceScreen(
             onBackClick = { navController.popBackStack() },
-            onNavigateToMusicDetail = { playlistId ->
-                navController.navigateToMusicDetail(playlistId)
+            onNavigateToMusicRecommend = { memberId ->
+                navController.navigateToMusicRecommend(memberId)
             }
         )
 
         musicDetailScreen(
+            onBackClick = { navController.popBackStack() }
+        )
+
+        musicRecommendScreen(
             onBackClick = { navController.popBackStack() }
         )
     }
