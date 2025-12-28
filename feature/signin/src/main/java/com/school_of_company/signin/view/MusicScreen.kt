@@ -57,6 +57,9 @@ fun MusicScreen(
         viewModel.fetchPlaylists(memberId)
     }
 
+
+
+
     LaunchedEffect(selectedPlaylistId) {
         if (selectedPlaylistId != 0L) {
             android.util.Log.d("MusicScreen", "Fetching playlist detail for id: $selectedPlaylistId")

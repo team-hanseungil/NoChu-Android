@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -76,12 +78,9 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 const val DEFAULT_EMOJI = "❓"
-const val EMOJI_SIZE = 40.0 // 40.sp
-
-const val EMOJI_CONTAINER_SIZE = 56.0 // 56.dp
-
-const val EMOJI_CONTAINER_CORNER_RADIUS = 8.0 // 8.dp
-
+const val EMOJI_SIZE = 40.0
+const val EMOJI_CONTAINER_SIZE = 56.0
+const val EMOJI_CONTAINER_CORNER_RADIUS = 8.0
 const val DATE_ICON = "📅"
 
 val emotionEmojis: Map<String, String> = mapOf(
@@ -102,7 +101,7 @@ val emotionEmojis: Map<String, String> = mapOf(
 fun PhotoUploadRoute(
     memberId: Long,
     viewModel: SignInViewModel = hiltViewModel(),
-    onNavigateToMusicDetail: (Long) -> Unit
+    onNavigateToMusicRecommend: (Long) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -159,7 +158,7 @@ fun PhotoUploadRoute(
                     selectedImageUri = selectedImageUri,
                     uiState = uiState,
                     onGoPickAgain = { selectedIndex = 1 },
-                    onMusicClick = { selectedIndex = 3 }
+                    onMusicClick = { onNavigateToMusicRecommend(memberId) }
                 )
             }
             3 -> {
@@ -204,23 +203,19 @@ fun HistoryScreenInternal(
     viewModel: PostViewModel,
     memberId: Long
 ) {
-    // PostViewModel의 emotionHistoryUiState를 관찰합니다.
     val uiState by viewModel.emotionHistoryUiState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.loadEmotionHistory(memberId)
     }
 
-    // GwangSanTheme 적용
     GwangSanTheme { colors, typography ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                // 배경색을 디자인 시스템의 gray100으로 설정
                 .background(GwangSanColor.gray100)
                 .padding(horizontal = 24.dp)
         ) {
-            // --- 헤더 영역 ---
             Text(
                 text = "감정 기록",
                 style = typography.titleLarge,
@@ -234,7 +229,6 @@ fun HistoryScreenInternal(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // --- UI 상태에 따른 화면 분기 ---
             when (uiState) {
                 HistoryUiState.Loading -> LoadingState()
                 is HistoryUiState.Success -> HistoryContent(
@@ -297,7 +291,12 @@ fun HistoryContent(
         modifier = Modifier.fillMaxSize()
     ) {
         items(response.emotions) { record ->
-            EmotionRecordItem(record = record, typography = typography, fixedProgressBarColor = fixedProgressBarColor, trackColor = trackColor)
+            EmotionRecordItem(
+                record = record,
+                typography = typography,
+                fixedProgressBarColor = fixedProgressBarColor,
+                trackColor = trackColor
+            )
         }
     }
 }
@@ -314,9 +313,9 @@ fun EmotionRecordItem(
 
     val dateText = try {
         LocalDate.parse(record.date, formatter).format(displayFormatter)
-    } catch (e: DateTimeParseException) {
+    } catch (_: DateTimeParseException) {
         record.date
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         record.date
     }
 
@@ -444,7 +443,6 @@ fun StatisticItem(value: String, label: String, valueColor: Color, typography: G
         )
     }
 }
-
 
 @Composable
 fun RowScope.NoChuNavigationBarItem(
@@ -715,11 +713,14 @@ fun AnalysisContent(
     onMusicClick: () -> Unit
 ) {
     GwangSanTheme { colors, typography ->
+        val scrollState = rememberScrollState()
+
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .background(colors.white)
                 .padding(horizontal = 20.dp, vertical = 24.dp)
+                .verticalScroll(scrollState)
         ) {
             Text(
                 text = "분석",
@@ -821,7 +822,26 @@ fun AnalysisContent(
                                 Spacer(modifier = Modifier.height(14.dp))
                             }
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                onClick = onMusicClick,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colors.subPOPule,
+                                    contentColor = colors.white,
+                                    disabledContainerColor = colors.gray200,
+                                    disabledContentColor = colors.gray500
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                            ) {
+                                Text(
+                                    text = "음악 추천하기",
+                                    style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
 
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
@@ -844,26 +864,6 @@ fun AnalysisContent(
                                         color = colors.gray700
                                     )
                                 }
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Music 탭으로 이동하는 버튼 (onMusicClick 콜백 실행)
-                            Button(
-                                onClick = onMusicClick,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = colors.subPOPule,
-                                    contentColor = colors.white,
-                                ),
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp)
-                            ) {
-                                Text(
-                                    text = "분석 기반 음악 추천 받기",
-                                    style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
-                                )
                             }
                         }
 
