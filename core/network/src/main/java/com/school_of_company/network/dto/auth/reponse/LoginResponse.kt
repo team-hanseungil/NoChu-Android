@@ -38,7 +38,7 @@ data class Track(
     @Json(name = "artists") val artists: List<String>,
     @Json(name = "title") val title: String,
     @Json(name = "imageUrl") val imageUrl: String?,
-    @Json(name = "previewUrl") val previewUrl: String?,
+    @Json(name = "spotifyUrl") val previewUrl: String,
     @Json(name = "duration") val duration: String
 )
 

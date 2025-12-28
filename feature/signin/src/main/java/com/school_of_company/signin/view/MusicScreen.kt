@@ -1,5 +1,7 @@
 package com.school_of_company.signin.view
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.school_of_company.design_system.R
@@ -56,9 +59,6 @@ fun MusicScreen(
         android.util.Log.d("MusicScreen", "Fetching playlists for memberId: $memberId")
         viewModel.fetchPlaylists(memberId)
     }
-
-
-
 
     LaunchedEffect(selectedPlaylistId) {
         if (selectedPlaylistId != 0L) {
@@ -308,35 +308,38 @@ fun PlaylistDetailContent(
     val context = LocalContext.current
 
     fun playTrack(track: TrackModel) {
-        track.previewUrl?.let { url ->
-            try {
-                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                    data = android.net.Uri.parse(url)
-                    setDataAndType(android.net.Uri.parse(url), "audio/*")
-                }
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                android.widget.Toast.makeText(
-                    context,
-                    "음악을 재생할 수 없습니다",
-                    android.widget.Toast.LENGTH_SHORT
-                ).show()
-            }
-        } ?: android.widget.Toast.makeText(
-            context,
-            "미리듣기를 제공하지 않는 곡입니다",
-            android.widget.Toast.LENGTH_SHORT
-        ).show()
+        val url = track.previewUrl
+        android.util.Log.d("PlayDebug", "Track Title: ${track.title}, URL Value: '$url'")
+
+        if (url.isNullOrBlank()) {
+            Toast.makeText(
+                context,
+                "재생할 수 있는 URL이 없습니다",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(
+                context,
+                "링크를 열 수 없습니다",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     fun playAll(tracks: List<TrackModel>) {
         if (tracks.isNotEmpty()) {
             playTrack(tracks[0])
         } else {
-            android.widget.Toast.makeText(
+            Toast.makeText(
                 context,
                 "재생할 곡이 없습니다",
-                android.widget.Toast.LENGTH_SHORT
+                Toast.LENGTH_SHORT
             ).show()
         }
     }
@@ -389,6 +392,12 @@ fun PlaylistDetailContent(
                         "상세 정보 로딩 실패",
                         color = colors.error,
                         style = typography.body3
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = uiState.exception.message ?: "",
+                        color = colors.gray700,
+                        style = typography.body5
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     TextButton(onClick = onBackClicked) {
@@ -446,7 +455,7 @@ fun DetailHeaderSection(
                     .data(detail.imageUrl)
                     .crossfade(true)
                     .build(),
-                placeholder = painterResource(R.drawable.music_icon),
+                placeholder = painterResource(R.drawable.musicmusic),
                 error = painterResource(R.drawable.music_icon),
                 contentDescription = "플레이리스트 커버",
                 contentScale = ContentScale.Crop,

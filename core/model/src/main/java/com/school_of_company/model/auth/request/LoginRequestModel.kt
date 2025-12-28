@@ -25,7 +25,7 @@ data class TrackModel(
     val artists: List<String>,
     val title: String,
     val imageUrl: String?,
-    val previewUrl: String?,
+    val previewUrl: String,
     val duration: String
 )
 

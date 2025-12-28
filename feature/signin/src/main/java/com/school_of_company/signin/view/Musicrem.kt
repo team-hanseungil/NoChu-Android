@@ -5,16 +5,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -22,11 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -55,6 +42,7 @@ import com.school_of_company.model.auth.request.PlaylistResponseModel
 import com.school_of_company.model.auth.request.TrackModel
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.MusicRR
+import androidx.core.net.toUri
 
 @Composable
 fun MusicScreen(
@@ -98,7 +86,9 @@ fun lPlaylistDetailContent(
     fun playTrack(track: TrackModel) {
         val url = track.previewUrl
 
-        if (url.isNullOrBlank()) {
+        android.util.Log.d("PlayDebug", "Track Title: ${track.title}, URL Value: '$url'")
+
+        if (url.isNullOrBlank()) { // null/blank 체크는 유지하는 것이 좋습니다.
             Toast.makeText(
                 context,
                 "재생할 수 있는 URL이 없습니다",
@@ -108,12 +98,17 @@ fun lPlaylistDetailContent(
         }
 
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            // 🚨 수정: setDataAndType 대신 Uri만 전달하여 시스템이 타입을 추론하도록 합니다.
+            // 그리고 복잡한 플래그들을 모두 제거하고 가장 단순하게 만듭니다.
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
+                // 다른 앱의 새 태스크에서 열리도록 NEW_TASK 플래그만 유지합니다.
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
             context.startActivity(intent)
         } catch (e: Exception) {
             Toast.makeText(
                 context,
-                "링크를 열 수 없습니다",
+                "링크를 열 수 없습니다", // 토스트 메시지도 더 일반적인 것으로 변경했습니다.
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -177,7 +172,7 @@ fun lPlaylistDetailContent(
 
         is MusicRR.Error -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         "상세 정보 로딩 실패",
                         color = colors.error,
@@ -234,7 +229,7 @@ fun lDetailHeaderSection(
             )
         }
 
-        androidx.compose.foundation.layout.Column(
+        Column(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = 32.dp),
@@ -371,7 +366,7 @@ fun lTrackItem(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        androidx.compose.foundation.layout.Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = track.title,
                 style = typography.body2.copy(fontWeight = FontWeight.SemiBold),
@@ -399,4 +394,3 @@ fun lTrackItem(
         )
     }
 }
-
