@@ -23,7 +23,7 @@ data class TrackModel( // <-- 새로운 TrackModel 도메인 모델
     val artists: List<String>,
     val title: String,
     val imageUrl: String? = null,
-    val previewUrl: String? = null,
+    val previewUrl: String,
     val duration: String
 )
 

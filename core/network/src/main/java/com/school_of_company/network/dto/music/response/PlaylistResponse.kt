@@ -29,7 +29,7 @@ data class TrackResponse( // <-- 새로운 TrackResponse DTO
     @Json(name = "artists") val artists: List<String>,
     @Json(name = "title") val title: String,
     @Json(name = "imageUrl") val imageUrl: String? = null, // nullable
-    @Json(name = "previewUrl") val previewUrl: String? = null, // nullable
+    @Json(name = "spotifyUrl") val previewUrl: String, // nullable
     @Json(name = "duration") val duration: String // mm:ss 형식, 예: "3:35"
 )
 
