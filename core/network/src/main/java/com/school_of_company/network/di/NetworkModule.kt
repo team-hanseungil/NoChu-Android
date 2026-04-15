@@ -78,7 +78,7 @@ object NetworkModule {
         moshiConverterFactory: MoshiConverterFactory,
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://api.hanseungil.shop")
+            .baseUrl("http://service.gsmsv.site:22105")
             .client(okHttpClient)
             .addConverterFactory(moshiConverterFactory)
             .build()
