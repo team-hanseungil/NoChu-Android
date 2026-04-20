@@ -1,8 +1,11 @@
 package com.school_of_company.network.api
 
+import com.school_of_company.network.dto.music.request.PlaylistRequest
 import com.school_of_company.network.dto.music.response.PlaylistDetailResponse
 import com.school_of_company.network.dto.music.response.PlaylistListResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface MusicAPI {
@@ -21,5 +24,11 @@ interface MusicAPI {
     @GET("/api/playlists/{playlistId}") // <-- 새로운 API 추가
     suspend fun getPlaylistDetail(
         @Path("playlistId") playlistId: Long
+    ): PlaylistDetailResponse
+
+    @POST("api/music/{memberId}")
+    suspend fun postMusicRecommend(
+        @Path("memberId") memberId: Long,
+        @Body body: PlaylistRequest
     ): PlaylistDetailResponse
 }

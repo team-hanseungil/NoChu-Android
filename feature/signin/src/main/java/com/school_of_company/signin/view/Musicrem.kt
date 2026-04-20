@@ -1,7 +1,6 @@
 package com.school_of_company.signin.view
 
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,33 +26,33 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.school_of_company.design_system.R
 import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.design_system.theme.GwangSanTypography
 import com.school_of_company.design_system.theme.color.ColorTheme
-import com.school_of_company.model.auth.request.PlaylistResponseModel
-import com.school_of_company.model.auth.request.TrackModel
+import com.school_of_company.model.music.response.PlaylistDetailModel
+import com.school_of_company.model.music.response.TrackModel
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.MusicRR
-import androidx.core.net.toUri
 
 @Composable
 fun MusicScreen(
-    viewModel: SignInViewModel = viewModel(),
+    viewModel: SignInViewModel = hiltViewModel(),
     memberId: Long,
     onBackClicked: () -> Unit = {}
 ) {
     val uiState by viewModel.musicRRState.collectAsState()
 
     LaunchedEffect(memberId) {
-        viewModel.musicRR(memberId)
+        viewModel.musicRR(memberId, null)
     }
 
     GwangSanTheme { colors, typography ->
@@ -85,32 +84,20 @@ fun lPlaylistDetailContent(
 
     fun playTrack(track: TrackModel) {
         val url = track.previewUrl
-
         android.util.Log.d("PlayDebug", "Track Title: ${track.title}, URL Value: '$url'")
 
-        if (url.isNullOrBlank()) { // null/blank 체크는 유지하는 것이 좋습니다.
-            Toast.makeText(
-                context,
-                "재생할 수 있는 URL이 없습니다",
-                Toast.LENGTH_SHORT
-            ).show()
+        if (url.isNullOrBlank()) {
+            Toast.makeText(context, "재생할 수 있는 URL이 없습니다", Toast.LENGTH_SHORT).show()
             return
         }
 
         try {
-            // 🚨 수정: setDataAndType 대신 Uri만 전달하여 시스템이 타입을 추론하도록 합니다.
-            // 그리고 복잡한 플래그들을 모두 제거하고 가장 단순하게 만듭니다.
             val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
-                // 다른 앱의 새 태스크에서 열리도록 NEW_TASK 플래그만 유지합니다.
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(
-                context,
-                "링크를 열 수 없습니다", // 토스트 메시지도 더 일반적인 것으로 변경했습니다.
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(context, "링크를 열 수 없습니다", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -118,19 +105,33 @@ fun lPlaylistDetailContent(
         if (tracks.isNotEmpty()) {
             playTrack(tracks[0])
         } else {
-            Toast.makeText(
-                context,
-                "재생할 곡이 없습니다",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(context, "재생할 곡이 없습니다", Toast.LENGTH_SHORT).show()
         }
     }
 
     when (uiState) {
-        MusicRR.Loading,
-        MusicRR.Idle -> {
+        MusicRR.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = colors.purple)
+            }
+        }
+
+        MusicRR.Idle -> {
+            // Idle = 아직 추천 안 받은 상태
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "🎵",
+                        fontSize = 48.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "감정 분석 후\n음악을 추천받아보세요!",
+                        style = typography.body3,
+                        color = colors.gray700,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
 
@@ -173,11 +174,7 @@ fun lPlaylistDetailContent(
         is MusicRR.Error -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "상세 정보 로딩 실패",
-                        color = colors.error,
-                        style = typography.body3
-                    )
+                    Text("상세 정보 로딩 실패", color = colors.error, style = typography.body3)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = uiState.exception.message ?: "",
@@ -196,7 +193,7 @@ fun lPlaylistDetailContent(
 
 @Composable
 fun lDetailHeaderSection(
-    detail: PlaylistResponseModel,
+    detail: PlaylistDetailModel,
     colors: ColorTheme,
     typography: GwangSanTypography,
     onBackClicked: () -> Unit
@@ -209,18 +206,13 @@ fun lDetailHeaderSection(
             .height(360.dp)
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFFFA726),
-                        Color(0xFFFF5252)
-                    )
+                    colors = listOf(Color(0xFFFFA726), Color(0xFFFF5252))
                 )
             )
     ) {
         IconButton(
             onClick = onBackClicked,
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.TopStart)
+            modifier = Modifier.padding(16.dp).align(Alignment.TopStart)
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,

@@ -100,7 +100,7 @@ fun NavGraphBuilder.musicRecommendScreen(
         // 👆 여기서 musicRR 결과를 PlaylistDetailUiState에 넣는 구조라고 가정
 
         LaunchedEffect(memberId) {
-            viewModel.musicRR(memberId)
+            viewModel.musicRR(memberId, null)
         }
 
         com.school_of_company.design_system.theme.GwangSanTheme { colors, typography ->
