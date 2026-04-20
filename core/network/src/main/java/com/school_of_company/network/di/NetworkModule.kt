@@ -78,7 +78,7 @@ object NetworkModule {
         moshiConverterFactory: MoshiConverterFactory,
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://service.gsmsv.site:22105")
+            .baseUrl("http://service.gsmsv.site:22105/")
             .client(okHttpClient)
             .addConverterFactory(moshiConverterFactory)
             .build()
@@ -144,4 +144,5 @@ object NetworkModule {
     @Singleton
     fun provideEmotionAPI(retrofit: Retrofit): EmotionAPI =
         retrofit.create(EmotionAPI::class.java)
+
 }

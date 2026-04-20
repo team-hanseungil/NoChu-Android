@@ -7,23 +7,17 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.school_of_company.Regex.isValidId
-import com.school_of_company.Regex.isValidPassword
 import com.school_of_company.data.repository.auth.AuthRepository
 import com.school_of_company.data.repository.local.LocalRepository
 import com.school_of_company.data.repository.music.MusicRepository
-import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.network.errorHandling
-import com.school_of_company.network.util.DeviceIdManager
-import com.school_of_company.post.viewmodel.uiState.ImageUpLoadUiState
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
 import com.school_of_company.signin.viewmodel.uistate.MusicRR
 import com.school_of_company.signin.viewmodel.uistate.MusicUiState
 import com.school_of_company.signin.viewmodel.uistate.PlaylistDetailUiState // 상세 UI 상태 import
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
-import com.school_of_company.signin.viewmodel.uistate.SaveTokenUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
 import com.school_of_company.signin.viewmodel.uistate.SignUpUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,7 +26,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -94,24 +87,15 @@ class SignInViewModel @Inject constructor(
             }
     }
 
-    internal fun musicRR(memberId: Long) = viewModelScope.launch {
-        authRepository.musicRR(memberId)
+    internal fun musicRR(memberId: Long, comment: String?) = viewModelScope.launch {
+        _musicRRState.value = MusicRR.Loading
+        musicRepository.postMusicRecommend(memberId, comment)  // authRepository → musicRepository
             .asResult()
             .collectLatest { result ->
                 when (result) {
-                    is Result.Loading -> {
-                        _musicRRState.value = MusicRR.Loading
-                    }
-
-                    is Result.Success -> {
-                        _musicRRState.value = MusicRR.Success(result.data)
-                    }
-
-                    is Result.Error -> {
-                        _musicRRState.value = MusicRR.Error(result.exception)
-                    }
-
-
+                    is Result.Loading -> _musicRRState.value = MusicRR.Loading
+                    is Result.Success -> _musicRRState.value = MusicRR.Success(result.data)
+                    is Result.Error   -> _musicRRState.value = MusicRR.Error(result.exception)
                 }
             }
     }
@@ -170,6 +154,10 @@ class SignInViewModel @Inject constructor(
 
     fun resetPostFaceState() {
         _postFaceUiState.value = PostFaceUiState.Idle
+    }
+
+    fun resetMusicRRState() {
+        _musicRRState.value = MusicRR.Idle
     }
 
     internal fun login() = viewModelScope.launch {

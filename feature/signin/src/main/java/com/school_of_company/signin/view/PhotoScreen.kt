@@ -68,8 +68,11 @@ import com.school_of_company.network.dto.post.response.EmotionHistoryResponse
 import com.school_of_company.network.dto.post.response.EmotionRecordResponse
 import com.school_of_company.post.viewmodel.PostViewModel
 import com.school_of_company.post.viewmodel.uiState.HistoryUiState
+import com.school_of_company.signin.view.MusicRecommendDialog
 import com.school_of_company.signin.view.MusicScreen
+import com.school_of_company.signin.view.lPlaylistDetailContent
 import com.school_of_company.signin.viewmodel.SignInViewModel
+import com.school_of_company.signin.viewmodel.uistate.MusicRR
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -109,14 +112,22 @@ fun PhotoUploadRoute(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val uiState by viewModel.postFaceUiState.collectAsState()
-
+    val musicRRState by viewModel.musicRRState.collectAsState()  // 추가
     val historyViewModel: PostViewModel = hiltViewModel()
+
+    // 추천 성공 시 분석 탭(2)에 있을 때만 음악 탭(3)으로 이동
+    LaunchedEffect(musicRRState) {
+        if (musicRRState is MusicRR.Success && selectedIndex == 2) {
+            selectedIndex = 3
+        }
+    }
 
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             selectedImageUri = uri
             if (uri != null) {
                 viewModel.resetPostFaceState()
+                viewModel.resetMusicRRState()
                 selectedIndex = 1
             }
         }
@@ -126,6 +137,10 @@ fun PhotoUploadRoute(
             NavigationContent(
                 selectedIndex = selectedIndex,
                 onItemSelected = { index ->
+                    // 분석(2) 탭 외에서 음악(3) 탭 직접 클릭 시 리셋
+                    if (index == 3 && selectedIndex != 2) {
+                        viewModel.resetMusicRRState()
+                    }
                     selectedIndex = index
                     if (index == 4) {
                         historyViewModel.loadEmotionHistory(memberId)
@@ -157,24 +172,34 @@ fun PhotoUploadRoute(
                     modifier = Modifier.padding(paddingValues),
                     selectedImageUri = selectedImageUri,
                     uiState = uiState,
-                    onGoPickAgain = { selectedIndex = 1 },
-                    onMusicClick = { onNavigateToMusicRecommend(memberId) }
+                    memberId = memberId,
+                    viewModel = viewModel,
+                    onGoPickAgain = {
+                        viewModel.resetMusicRRState()
+                        selectedIndex = 1
+                    },
+                    onMusicClick = { selectedIndex = 3 }
                 )
             }
             3 -> {
-                Box(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize()
-                        .background(GwangSanColor.gray100)
-                ) {
-                    MusicScreen(
-                        viewModel = viewModel,
-                        selectedIndex = selectedIndex,
-                        onItemSelected = { index -> selectedIndex = index },
-                        memberId = memberId,
-                        onNavigateToDetails = {}
-                    )
+                GwangSanTheme { colors, typography ->
+                    Box(
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .fillMaxSize()
+                            .background(GwangSanColor.gray100)
+                    ) {
+                        lPlaylistDetailContent(
+                            colors = colors,
+                            typography = typography,
+                            playlistId = 0L,
+                            uiState = musicRRState,
+                            onBackClicked = {
+                                viewModel.resetMusicRRState()
+                                selectedIndex = 2
+                            }
+                        )
+                    }
                 }
             }
             4 -> {
@@ -699,19 +724,18 @@ fun PhotoUploadContent(
     }
 }
 
-private data class EmotionItem(
-    val label: String,
-    val percent: Int
-)
-
 @Composable
 fun AnalysisContent(
     modifier: Modifier = Modifier,
     selectedImageUri: Uri?,
     uiState: PostFaceUiState,
+    memberId: Long,
+    viewModel: SignInViewModel = hiltViewModel(),
     onGoPickAgain: () -> Unit,
     onMusicClick: () -> Unit
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
     GwangSanTheme { colors, typography ->
         val scrollState = rememberScrollState()
 
@@ -780,9 +804,7 @@ fun AnalysisContent(
                                 style = typography.body2,
                                 color = colors.error
                             )
-
                             Spacer(modifier = Modifier.height(12.dp))
-
                             Button(
                                 onClick = onGoPickAgain,
                                 colors = ButtonDefaults.buttonColors(
@@ -823,7 +845,7 @@ fun AnalysisContent(
                             }
 
                             Button(
-                                onClick = onMusicClick,
+                                onClick = { showDialog = true },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colors.subPOPule,
                                     contentColor = colors.white,
@@ -857,7 +879,6 @@ fun AnalysisContent(
                                         color = colors.black
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
-
                                     Text(
                                         text = data.comment,
                                         style = typography.body2,
@@ -873,7 +894,22 @@ fun AnalysisContent(
             }
         }
     }
+
+    if (showDialog) {
+        MusicRecommendDialog(
+            onDismiss = { showDialog = false },
+            onConfirm = { comment ->
+                showDialog = false
+                viewModel.musicRR(memberId, comment)
+            }
+        )
+    }
 }
+
+private data class EmotionItem(
+    val label: String,
+    val percent: Int
+)
 
 @Composable
 private fun EmotionRow(
