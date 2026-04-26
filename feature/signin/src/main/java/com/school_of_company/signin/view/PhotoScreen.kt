@@ -189,16 +189,24 @@ fun PhotoUploadRoute(
                             .fillMaxSize()
                             .background(GwangSanColor.gray100)
                     ) {
-                        lPlaylistDetailContent(
-                            colors = colors,
-                            typography = typography,
-                            playlistId = 0L,
-                            uiState = musicRRState,
-                            onBackClicked = {
-                                viewModel.resetMusicRRState()
-                                selectedIndex = 2
-                            }
-                        )
+                        if (musicRRState is MusicRR.Success || musicRRState is MusicRR.Loading) {
+                            lPlaylistDetailContent(
+                                colors = colors,
+                                typography = typography,
+                                playlistId = 0L,
+                                uiState = musicRRState,
+                                onBackClicked = {
+                                    viewModel.resetMusicRRState()
+                                    selectedIndex = 2
+                                }
+                            )
+                        } else {
+                            MusicScreen(
+                                viewModel = viewModel,
+                                selectedIndex = selectedIndex,
+                                onItemSelected = { selectedIndex = it }
+                            )
+                        }
                     }
                 }
             }

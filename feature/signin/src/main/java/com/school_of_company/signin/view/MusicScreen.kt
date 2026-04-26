@@ -48,12 +48,12 @@ fun MusicScreen(
     viewModel: SignInViewModel = viewModel(),
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
-    memberId: Long = 1L,
     onNavigateToDetails: (PlaylistModel) -> Unit = {}
 ) {
     var selectedPlaylistId by remember { mutableLongStateOf(0L) }
     val listUiState by viewModel.musicUiState.collectAsState()
     val detailUiState by viewModel.playlistDetailUiState.collectAsState()
+    val memberId by viewModel.currentMemberId.collectAsState()
 
     LaunchedEffect(memberId) {
         android.util.Log.d("MusicScreen", "Fetching playlists for memberId: $memberId")
