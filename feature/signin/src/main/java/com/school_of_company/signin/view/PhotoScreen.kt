@@ -108,17 +108,16 @@ fun PhotoUploadRoute(
 ) {
     val context = LocalContext.current
 
-    var selectedIndex by remember { mutableIntStateOf(1) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val uiState by viewModel.postFaceUiState.collectAsState()
-    val musicRRState by viewModel.musicRRState.collectAsState()  // 추가
+    val musicRRState by viewModel.musicRRState.collectAsState()
     val historyViewModel: PostViewModel = hiltViewModel()
 
-    // 추천 성공 시 분석 탭(2)에 있을 때만 음악 탭(3)으로 이동
     LaunchedEffect(musicRRState) {
-        if (musicRRState is MusicRR.Success && selectedIndex == 2) {
-            selectedIndex = 3
+        if (musicRRState is MusicRR.Success && selectedIndex == 1) {
+            selectedIndex = 2
         }
     }
 
@@ -128,7 +127,7 @@ fun PhotoUploadRoute(
             if (uri != null) {
                 viewModel.resetPostFaceState()
                 viewModel.resetMusicRRState()
-                selectedIndex = 1
+                selectedIndex = 0
             }
         }
 
@@ -137,12 +136,11 @@ fun PhotoUploadRoute(
             NavigationContent(
                 selectedIndex = selectedIndex,
                 onItemSelected = { index ->
-                    // 분석(2) 탭 외에서 음악(3) 탭 직접 클릭 시 리셋
-                    if (index == 3 && selectedIndex != 2) {
+                    if (index == 2 && selectedIndex != 1) {
                         viewModel.resetMusicRRState()
                     }
                     selectedIndex = index
-                    if (index == 4) {
+                    if (index == 3) {
                         historyViewModel.loadEmotionHistory(memberId)
                     }
                 }
@@ -150,7 +148,7 @@ fun PhotoUploadRoute(
         }
     ) { paddingValues ->
         when (selectedIndex) {
-            1 -> {
+            0 -> {
                 PhotoUploadContent(
                     modifier = Modifier.padding(paddingValues),
                     selectedImageUri = selectedImageUri,
@@ -163,11 +161,11 @@ fun PhotoUploadRoute(
                             context = context,
                             image = uri
                         )
-                        selectedIndex = 2
+                        selectedIndex = 1
                     }
                 )
             }
-            2 -> {
+            1 -> {
                 AnalysisContent(
                     modifier = Modifier.padding(paddingValues),
                     selectedImageUri = selectedImageUri,
@@ -176,12 +174,12 @@ fun PhotoUploadRoute(
                     viewModel = viewModel,
                     onGoPickAgain = {
                         viewModel.resetMusicRRState()
-                        selectedIndex = 1
+                        selectedIndex = 0
                     },
-                    onMusicClick = { selectedIndex = 3 }
+                    onMusicClick = { selectedIndex = 2 }
                 )
             }
-            3 -> {
+            2 -> {
                 GwangSanTheme { colors, typography ->
                     Box(
                         modifier = Modifier
@@ -197,7 +195,7 @@ fun PhotoUploadRoute(
                                 uiState = musicRRState,
                                 onBackClicked = {
                                     viewModel.resetMusicRRState()
-                                    selectedIndex = 2
+                                    selectedIndex = 1
                                 }
                             )
                         } else {
@@ -210,7 +208,7 @@ fun PhotoUploadRoute(
                     }
                 }
             }
-            4 -> {
+            3 -> {
                 Box(
                     modifier = Modifier
                         .padding(paddingValues)
@@ -218,14 +216,6 @@ fun PhotoUploadRoute(
                 ) {
                     HistoryScreenInternal(viewModel = historyViewModel, memberId = memberId)
                 }
-            }
-            else -> {
-                Box(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize()
-                        .background(GwangSanColor.white)
-                )
             }
         }
     }
@@ -534,10 +524,9 @@ private fun NavigationContent(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit
 ) {
-    val items = listOf("홈", "사진", "분석", "음악", "기록")
+    val items = listOf("사진", "분석", "음악", "기록")
 
     val icons = listOf(
-        R.drawable.home,
         R.drawable.camera_icon,
         R.drawable.chartbar_icon,
         R.drawable.music_icon,
