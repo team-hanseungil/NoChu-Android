@@ -69,7 +69,7 @@ fun MusicRecommendDialog(
                         onValueChange = { inputText = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(120.dp)
+                            .heightIn(min = 120.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(colors.gray100)
                             .padding(14.dp),
@@ -77,7 +77,9 @@ fun MusicRecommendDialog(
                         decorationBox = { innerTextField ->
                             if (inputText.isEmpty()) {
                                 Text(
-                                    text = "예: 신나는 음악, 잔잔한 발라드...",
+                                    text = "예: 기분이 좋고 신날 때 → 신나는 음악\n" +
+                                            "슬프고 우울할 때 → 감성적인 음악\n" +
+                                            "집중하고 싶을 때 → 차분한 음악",
                                     style = typography.body2,
                                     color = colors.gray400
                                 )
