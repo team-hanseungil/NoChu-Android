@@ -5,6 +5,11 @@ plugins {
 }
 
 android {
+    defaultConfig {
+        manifestPlaceholders["redirectSchemeName"] = "nochu"
+        manifestPlaceholders["redirectHostName"] = "auth"
+    }
+
     buildFeatures {
         buildConfig = true
     }
@@ -20,7 +25,6 @@ android {
 }
 
 dependencies {
-
     implementation(project(":core:ui"))
     implementation(project(":core:design-system"))
     implementation(project(":core:data"))
@@ -34,12 +38,12 @@ dependencies {
     implementation(project(":feature:content"))
     implementation(project(":feature:chat"))
     implementation(project(":feature:inform"))
-
     implementation(project(":feature:main"))
     implementation(project(":feature:post"))
     implementation(project(":feature:signin"))
-    implementation(project(":feature:signup"))
     implementation(project(":feature:profile"))
+
+    implementation("com.spotify.android:auth:2.1.0")
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
