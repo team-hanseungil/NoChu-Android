@@ -9,84 +9,84 @@ import javax.inject.Inject
 class AuthTokenDataSourceImpl @Inject constructor(
     private val authToken: DataStore<AuthToken>
 ) : AuthTokenDataSource {
-    override fun getAccessToken(): Flow<String> = authToken.data.map {
-        it.accessToken ?: ""
-    }
 
+    override fun getAccessToken(): Flow<String> = authToken.data.map {
+        it.accessToken
+    }
 
     override suspend fun setAccessToken(accessToken: String) {
         authToken.updateData {
-            it.toBuilder()
-                .setAccessToken(accessToken)
-                .build()
+            it.toBuilder().setAccessToken(accessToken).build()
         }
     }
 
     override suspend fun removeAccessToken() {
         authToken.updateData {
-            it.toBuilder()
-                .clearAccessToken()
-                .build()
+            it.toBuilder().clearAccessToken().build()
         }
     }
 
     override fun getAccessTokenExp(): Flow<String> = authToken.data.map {
-        it.accessExpiresIn ?: ""
+        it.accessExpiresIn
     }
 
     override suspend fun setAccessTokenExp(accessTokenExp: String) {
         authToken.updateData {
-            it.toBuilder()
-                .setAccessExpiresIn(accessTokenExp)
-                .build()
+            it.toBuilder().setAccessExpiresIn(accessTokenExp).build()
         }
     }
 
     override suspend fun removeAccessTokenExp() {
         authToken.updateData {
-            it.toBuilder()
-                .clearAccessExpiresIn()
-                .build()
+            it.toBuilder().clearAccessExpiresIn().build()
         }
     }
 
     override fun getRefreshToken(): Flow<String> = authToken.data.map {
-        it.refreshToken ?: ""
+        it.refreshToken
     }
 
     override suspend fun setRefreshToken(refreshToken: String) {
         authToken.updateData {
-            it.toBuilder()
-                .setRefreshToken(refreshToken)
-                .build()
+            it.toBuilder().setRefreshToken(refreshToken).build()
         }
     }
 
     override suspend fun removeRefreshToken() {
         authToken.updateData {
-            it.toBuilder()
-                .clearRefreshToken()
-                .build()
+            it.toBuilder().clearRefreshToken().build()
         }
     }
 
     override fun getRefreshTokenExp(): Flow<String> = authToken.data.map {
-        it.refreshExpiresIn ?: ""
+        it.refreshExpiresIn
     }
 
     override suspend fun setRefreshTokenExp(refreshTokenExp: String) {
         authToken.updateData {
-            it.toBuilder()
-                .setRefreshExpiresIn(refreshTokenExp)
-                .build()
+            it.toBuilder().setRefreshExpiresIn(refreshTokenExp).build()
         }
     }
 
     override suspend fun removeRefreshTokenExp() {
         authToken.updateData {
-            it.toBuilder()
-                .clearRefreshExpiresIn()
-                .build()
+            it.toBuilder().clearRefreshExpiresIn().build()
+        }
+    }
+
+    override fun getMemberId(): Flow<Long> = authToken.data.map {
+        it.memberId
+    }
+
+    override suspend fun setMemberId(memberId: Long) {
+        authToken.updateData {
+            it.toBuilder().setMemberId(memberId).build()
+        }
+    }
+
+    override suspend fun removeMemberId() {
+        authToken.updateData {
+            it.toBuilder().setMemberId(0L).build()
         }
     }
 }
