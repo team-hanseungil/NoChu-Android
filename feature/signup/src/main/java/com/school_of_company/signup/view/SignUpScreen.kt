@@ -106,7 +106,7 @@ fun SignUpScreen(
         onPasswordChange = viewModel::onPasswordChange,
         onCheckPasswordChange = viewModel::onCheckPasswordChange,
         onSignInClick = onSignInClick,
-        signUpCallBack = viewModel::signUp,
+        signUpCallBack = { },
     )
 }
 

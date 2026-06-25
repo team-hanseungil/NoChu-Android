@@ -23,22 +23,22 @@ class AppViewModel @Inject constructor(
     internal val appLoginState: State<AppLoginState> = _appLoginState
 
     init {
-        tokenRefresh()
+        checkAndRefreshToken()
     }
 
-    private fun tokenRefresh() = viewModelScope.launch {
+    private fun checkAndRefreshToken() = viewModelScope.launch {
         _appLoginState.value = AppLoginState.Loading
         val refreshToken = authTokenDataSource.getRefreshToken().first()
 
         if (refreshToken.isEmpty()) {
             _appLoginState.value = AppLoginState.Fail
         } else {
-            authRepository.tokenRefresh()
+            authRepository.refreshToken(refreshToken = refreshToken)
                 .asResult()
                 .collectLatest { result ->
                     when (result) {
                         is Result.Loading -> _appLoginState.value = AppLoginState.Loading
-                        is Result.Success-> {
+                        is Result.Success -> {
                             _appLoginState.value = AppLoginState.Success
                             authRepository.saveToken(result.data)
                         }

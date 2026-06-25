@@ -4,8 +4,12 @@ import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.model.auth.request.EmotionsModel
 import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.PlaylistResponseModel
+import com.school_of_company.model.auth.request.SpotifyLoginRequestModel
+import com.school_of_company.model.auth.request.RefreshTokenRequestModel
 import com.school_of_company.model.auth.request.TrackModel
 import com.school_of_company.network.dto.auth.requset.LoginRequest
+import com.school_of_company.network.dto.auth.requset.SpotifyLoginRequest
+import com.school_of_company.network.dto.auth.requset.RefreshTokenRequest
 import com.school_of_company.network.dto.reponse.EmotionResponse
 import com.school_of_company.network.dto.reponse.Emotions
 import com.school_of_company.network.dto.reponse.PlaylistResponse
@@ -18,6 +22,16 @@ fun LoginRequestModel.toDto(): LoginRequest =
         deviceToken = deviceToken,
         deviceId = deviceId,
         osType = osType
+    )
+
+fun SpotifyLoginRequestModel.toDto(): SpotifyLoginRequest =
+    SpotifyLoginRequest(
+        code = code
+    )
+
+fun RefreshTokenRequestModel.toDto(): RefreshTokenRequest =
+    RefreshTokenRequest(
+        refreshToken = refreshToken
     )
 
 fun EmotionResponse.toModel(): EmotionResponseModel =
@@ -43,8 +57,7 @@ fun PlaylistResponse.toModel(): PlaylistResponseModel =
         id = id,
         title = title,
         imageUrl = imageUrl,
-        tracks = tracks.map { it.toModel() },
-
+        tracks = tracks.map { it.toModel() }
     )
 
 fun Track.toModel(): TrackModel =

@@ -7,6 +7,15 @@ data class LoginRequestModel(
     val deviceId: String,
     val osType: String = "ANDROID"
 )
+
+data class SpotifyLoginRequestModel(
+    val code: String
+)
+
+data class RefreshTokenRequestModel(
+    val refreshToken: String
+)
+
 data class EmotionResponseModel(
     val imageUrl: String,
     val emotions: EmotionsModel,
@@ -29,12 +38,11 @@ data class TrackModel(
     val duration: String
 )
 
-
 data class EmotionsModel(
     val happy: Double,
-     val surprise: Double,
-   val anger: Double,
-     val anxiety: Double,
-     val hurt: Double,
-  val sad: Double
+    val surprise: Double,
+    val anger: Double,
+    val anxiety: Double,
+    val hurt: Double,
+    val sad: Double
 )

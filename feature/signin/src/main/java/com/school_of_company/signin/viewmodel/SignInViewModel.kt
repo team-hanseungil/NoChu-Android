@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.school_of_company.data.repository.auth.AuthRepository
 import com.school_of_company.data.repository.local.LocalRepository
 import com.school_of_company.data.repository.music.MusicRepository
-import com.school_of_company.model.auth.request.SignUpRequestModel
 import com.school_of_company.network.errorHandling
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
@@ -19,7 +18,6 @@ import com.school_of_company.signin.viewmodel.uistate.MusicUiState
 import com.school_of_company.signin.viewmodel.uistate.PlaylistDetailUiState
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
-import com.school_of_company.signin.viewmodel.uistate.SignUpUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import getMultipartFile
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,15 +34,7 @@ class SignInViewModel @Inject constructor(
     private val musicRepository: MusicRepository
 ) : ViewModel() {
 
-    companion object {
-        private const val ID = "id"
-        private const val PASSWORD = "password"
-    }
-
     // =========================== 상태 ===========================
-
-    internal var id = savedStateHandle.getStateFlow(key = ID, initialValue = "")
-    internal var password = savedStateHandle.getStateFlow(key = PASSWORD, initialValue = "")
 
     private val _signInUiState = MutableStateFlow<SignInUiState>(SignInUiState.Loading)
     internal val signInUiState = _signInUiState.asStateFlow()
@@ -52,14 +42,14 @@ class SignInViewModel @Inject constructor(
     private val _musicRRState = MutableStateFlow<MusicRR>(MusicRR.Loading)
     internal val musicRRState = _musicRRState.asStateFlow()
 
-    private val _signUpUiState = MutableStateFlow<SignUpUiState>(SignUpUiState.Loading)
-    internal val signUpUiState = _signUpUiState.asStateFlow()
-
     private val _musicUiState = MutableStateFlow<MusicUiState>(MusicUiState.Idle)
     val musicUiState = _musicUiState.asStateFlow()
 
     private val _playlistDetailUiState = MutableStateFlow<PlaylistDetailUiState>(PlaylistDetailUiState.Idle)
     val playlistDetailUiState = _playlistDetailUiState.asStateFlow()
+
+    private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Idle)
+    val postFaceUiState = _postFaceUiState.asStateFlow()
 
     private val _currentMemberId = MutableStateFlow<Long>(0L)
     val currentMemberId = _currentMemberId.asStateFlow()
@@ -72,6 +62,31 @@ class SignInViewModel @Inject constructor(
         }
     }
 
+    // ========================= Spotify 로그인 ==========================
+
+    internal fun loginWithSpotify(code: String) = viewModelScope.launch {
+        _signInUiState.value = SignInUiState.Loading
+
+        authRepository.loginWithSpotify(code = code)
+            .asResult()
+            .collectLatest { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _signInUiState.value = SignInUiState.Loading
+                    }
+                    is Result.Success -> {
+                        Log.d("SignInViewModel", "Spotify login success")
+                        authRepository.saveToken(result.data)
+                        _signInUiState.value = SignInUiState.Success
+                    }
+                    is Result.Error -> {
+                        Log.e("SignInViewModel", "Spotify login failed: ${result.exception}")
+                        _signInUiState.value = SignInUiState.Error(result.exception)
+                    }
+                }
+            }
+    }
+
     // ========================= 음악 로직 ==========================
 
     internal fun fetchPlaylists(memberId: Long) = viewModelScope.launch {
@@ -79,9 +94,7 @@ class SignInViewModel @Inject constructor(
             .asResult()
             .collectLatest { result ->
                 when (result) {
-                    is Result.Loading -> {
-                        _musicUiState.value = MusicUiState.Loading
-                    }
+                    is Result.Loading -> _musicUiState.value = MusicUiState.Loading
                     is Result.Success -> {
                         _musicUiState.value = MusicUiState.Success(result.data)
                         Log.d(TAG, "Playlists fetched successfully: ${result.data}")
@@ -112,12 +125,10 @@ class SignInViewModel @Inject constructor(
             .asResult()
             .collectLatest { result ->
                 when (result) {
-                    is Result.Loading -> {
-                        _playlistDetailUiState.value = PlaylistDetailUiState.Loading
-                    }
+                    is Result.Loading -> _playlistDetailUiState.value = PlaylistDetailUiState.Loading
                     is Result.Success -> {
                         _playlistDetailUiState.value = PlaylistDetailUiState.Success(result.data)
-                        Log.d(TAG, "Playlist detail fetched successfully: ${result.data.id}")
+                        Log.d(TAG, "Playlist detail fetched: ${result.data.id}")
                     }
                     is Result.Error -> {
                         _playlistDetailUiState.value = PlaylistDetailUiState.Error(result.exception)
@@ -128,9 +139,6 @@ class SignInViewModel @Inject constructor(
     }
 
     // ========================= 기타 로직 ==========================
-
-    private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Idle)
-    val postFaceUiState = _postFaceUiState.asStateFlow()
 
     internal fun postFace(memberId: Long, context: Context, image: Uri) = viewModelScope.launch {
         _postFaceUiState.value = PostFaceUiState.Loading
@@ -149,7 +157,7 @@ class SignInViewModel @Inject constructor(
                 when (result) {
                     is Result.Loading -> _postFaceUiState.value = PostFaceUiState.Loading
                     is Result.Success -> _postFaceUiState.value = PostFaceUiState.Success(result.data)
-                    is Result.Error -> _postFaceUiState.value = PostFaceUiState.Error(result.exception)
+                    is Result.Error   -> _postFaceUiState.value = PostFaceUiState.Error(result.exception)
                 }
             }
     }
@@ -160,72 +168,5 @@ class SignInViewModel @Inject constructor(
 
     fun resetMusicRRState() {
         _musicRRState.value = MusicRR.Idle
-    }
-
-    internal fun login() = viewModelScope.launch {
-        _signInUiState.value = SignInUiState.Loading
-
-        val nicknameValue = id.value
-        val passwordValue = password.value
-
-        val body = SignUpRequestModel(
-            nickname = nicknameValue,
-            password = passwordValue,
-        )
-
-        authRepository.signIn(body = body)
-            .asResult()
-            .collectLatest { result ->
-                when (result) {
-                    is Result.Loading -> {
-                        _signInUiState.value = SignInUiState.Loading
-                    }
-                    is Result.Success -> {
-                        Log.d("LoginViewModel", "Login success, saving token...")
-                        Log.d("LoginViewModel", "Token data: ${result.data}")
-                        _signInUiState.value = SignInUiState.Success(result.data.memberId)
-                        authRepository.saveToken(result.data)
-                        localRepository.saveMemberId(result.data.memberId)  // ← 추가
-                    }
-                    is Result.Error -> {
-                        Log.e("LoginViewModel", "Login failed: ${result.exception}")
-                        _signInUiState.value = SignInUiState.Error(result.exception)
-                        result.exception.errorHandling(
-                            notFoundAction = { _signInUiState.value = SignInUiState.NotFound },
-                            badRequestAction = { _signInUiState.value = SignInUiState.BadRequest }
-                        )
-                    }
-                }
-            }
-    }
-
-    internal fun signUp(body: SignUpRequestModel) = viewModelScope.launch {
-        _signUpUiState.value = SignUpUiState.Loading
-
-        authRepository.signUp(body)
-            .asResult()
-            .collectLatest { result ->
-                when (result) {
-                    is Result.Success -> _signUpUiState.value = SignUpUiState.Success
-                    is Result.Loading -> _signUpUiState.value = SignUpUiState.Loading
-                    is Result.Error -> {
-                        _signUpUiState.value = SignUpUiState.Error(result.exception)
-                        result.exception.errorHandling(
-                            conflictAction = { _signUpUiState.value = SignUpUiState.Conflict },
-                            unauthorizedAction = { _signUpUiState.value = SignUpUiState.Unauthorized },
-                        )
-                    }
-                }
-            }
-    }
-
-    // ======================= 데이터 변경 핸들러 ========================
-
-    internal fun onIdChange(value: String) {
-        savedStateHandle[ID] = value
-    }
-
-    internal fun onPasswordChange(value: String) {
-        savedStateHandle[PASSWORD] = value
     }
 }

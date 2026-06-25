@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
-
 plugins {
     id("gwangsan.android.core")
     id("gwangsan.android.hilt")
@@ -9,11 +7,11 @@ plugins {
 android {
     namespace = "com.school_of_company.datastore"
 }
+
 androidComponents {
     onVariants(selector().all()) { variant ->
         afterEvaluate {
             val capName = variant.name.capitalize()
-
             tasks.getByName<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("ksp${capName}Kotlin") {
                 setSource(
                     tasks.getByName("generate${capName}Proto").outputs
@@ -22,6 +20,7 @@ androidComponents {
         }
     }
 }
+
 protobuf {
     protoc {
         artifact = libs.protobuf.protoc.get().toString()

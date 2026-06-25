@@ -1,9 +1,9 @@
 pluginManagement {
     includeBuild("build-logic")
     repositories {
-            google()
-            mavenCentral()
-            gradlePluginPortal()
+        google()
+        mavenCentral()
+        gradlePluginPortal()
     }
 }
 
@@ -28,7 +28,6 @@ include(":core:model")
 include(":core:datastore")
 include(":feature")
 gradle.startParameter.excludedTaskNames.addAll(listOf(":build-logic:convention:testClasses"))
-include(":feature:signup")
 include(":core:data")
 include(":feature:signin")
 include(":feature:main")
