@@ -78,7 +78,7 @@ object NetworkModule {
         moshiConverterFactory: MoshiConverterFactory,
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://service.gsmsv.site:22105/")
+            .baseUrl("http://service.gsmsv.site:22104/")
             .client(okHttpClient)
             .addConverterFactory(moshiConverterFactory)
             .build()
@@ -88,8 +88,7 @@ object NetworkModule {
     @Singleton
     fun provideAuthAPI(retrofit: Retrofit): AuthAPI =
         retrofit.create(AuthAPI::class.java)
-
-    // 2. MusicAPI 제공 함수 추가
+    
     @Provides
     @Singleton
     fun provideMusicAPI(retrofit: Retrofit): MusicAPI =

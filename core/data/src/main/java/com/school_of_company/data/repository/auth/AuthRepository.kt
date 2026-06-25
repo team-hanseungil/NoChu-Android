@@ -1,42 +1,30 @@
 package com.school_of_company.data.repository.auth
 
 import com.school_of_company.model.auth.request.EmotionResponseModel
-import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.PlaylistResponseModel
-import com.school_of_company.model.auth.request.SignUpCertificationNumberSendRequestModel
-import com.school_of_company.model.auth.request.SignUpRequestModel
-import com.school_of_company.model.auth.request.SmsVerifyCodeRequestModel
-import com.school_of_company.model.auth.request.TrackModel
-import com.school_of_company.model.auth.response.LoginResponseModel
+import com.school_of_company.model.auth.response.TokenResponseModel
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 
 interface AuthRepository {
-    fun signIn(body: SignUpRequestModel): Flow<LoginResponseModel>
 
-    fun signUp(body: SignUpRequestModel): Flow<Unit>
+    fun loginWithSpotify(code: String): Flow<TokenResponseModel>
+
+    fun refreshToken(refreshToken: String): Flow<TokenResponseModel>
 
     fun logout(): Flow<Unit>
 
-    // 💡 수정된 부분: tokenRefresh는 인자를 받지 않고, 내부에서 토큰을 처리합니다.
-    fun tokenRefresh(): Flow<LoginResponseModel>
+    fun signLogout(): Flow<Unit>
 
     fun musicRR(memberId: Long): Flow<PlaylistResponseModel>
 
-    fun signLogout(): Flow<Unit>
+    fun postFace(memberId: Long, image: MultipartBody.Part): Flow<EmotionResponseModel>
 
     fun getRefreshToken(): Flow<String>
 
-    fun postFace(memberId: Long,image: MultipartBody.Part) : Flow<EmotionResponseModel>
+    fun getAccessToken(): Flow<String>
 
-
-    suspend fun saveToken(token: LoginResponseModel)
+    suspend fun saveToken(token: TokenResponseModel)
 
     suspend fun deleteTokenData()
-
-    suspend fun getAccessToken(): Flow<String>
-
-    fun signUpCertificationNumberCertification(body: SmsVerifyCodeRequestModel): Flow<Unit>
-
-    fun signUpCertificationNumberSend(body: SignUpCertificationNumberSendRequestModel): Flow<Unit>
 }

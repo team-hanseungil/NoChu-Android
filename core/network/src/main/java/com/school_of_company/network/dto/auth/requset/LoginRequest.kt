@@ -1,8 +1,8 @@
+// requset/SpotifyLoginRequest.kt (기존 requset 패키지에 추가)
 package com.school_of_company.network.dto.auth.requset
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import retrofit2.http.Multipart
 
 @JsonClass(generateAdapter = true)
 data class LoginRequest(
@@ -14,6 +14,11 @@ data class LoginRequest(
 )
 
 @JsonClass(generateAdapter = true)
-data class image(
-    @Json(name = "image") val image: Multipart
+data class SpotifyLoginRequest(
+    @Json(name = "code") val code: String
+)
+
+@JsonClass(generateAdapter = true)
+data class RefreshTokenRequest(
+    @Json(name = "refreshToken") val refreshToken: String
 )

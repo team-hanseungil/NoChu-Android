@@ -1,3 +1,4 @@
+// reponse/TokenResponse.kt (기존 LoginResponse.kt에 추가)
 package com.school_of_company.network.dto.reponse
 
 import com.squareup.moshi.Json
@@ -8,6 +9,11 @@ data class LoginResponse(
     @Json(name = "memberId") val memberId: Long,
 )
 
+@JsonClass(generateAdapter = true)
+data class TokenResponse(
+    @Json(name = "accessToken") val accessToken: String,
+    @Json(name = "refreshToken") val refreshToken: String,
+)
 
 @JsonClass(generateAdapter = true)
 data class EmotionResponse(
@@ -26,6 +32,7 @@ data class Emotions(
     @Json(name = "hurt") val hurt: Double,
     @Json(name = "sad") val sad: Double
 )
+
 @JsonClass(generateAdapter = true)
 data class PlaylistResponse(
     @Json(name = "id") val id: Long,
@@ -33,6 +40,7 @@ data class PlaylistResponse(
     @Json(name = "imageUrl") val imageUrl: String?,
     @Json(name = "tracks") val tracks: List<Track>
 )
+
 @JsonClass(generateAdapter = true)
 data class Track(
     @Json(name = "artists") val artists: List<String>,
@@ -41,6 +49,3 @@ data class Track(
     @Json(name = "spotifyUrl") val previewUrl: String,
     @Json(name = "duration") val duration: String
 )
-
-
-

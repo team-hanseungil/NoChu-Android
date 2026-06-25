@@ -7,5 +7,6 @@ message AuthToken {
   string accessToken = 1;
   string accessExpiresIn = 2;
   string refreshToken = 3;
-  string refreshExpiresIn= 4;
+  string refreshExpiresIn = 4;
+  int64 memberId = 5;
 }

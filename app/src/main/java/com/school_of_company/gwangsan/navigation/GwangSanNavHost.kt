@@ -14,15 +14,12 @@ import com.school_of_company.common.ServerException
 import com.school_of_company.common.TimeOutException
 import com.school_of_company.common.UnKnownException
 import com.school_of_company.signin.navigation.StartRoute
-import com.school_of_company.signin.navigation.SignUpRoute
 import com.school_of_company.signin.navigation.musicDetailScreen
 import com.school_of_company.signin.navigation.musicRecommendScreen
-import com.school_of_company.signin.navigation.navigateToMusicDetail
 import com.school_of_company.signin.navigation.navigateToMusicRecommend
 import com.school_of_company.signin.navigation.navigateToPhotoFace
 import com.school_of_company.signin.navigation.photoFaceScreen
 import com.school_of_company.signin.navigation.signInScreen
-import com.school_of_company.signin.navigation.signUpScreen
 
 @Composable
 fun GwangsanNavHost(
@@ -56,17 +53,11 @@ fun GwangsanNavHost(
     ) {
         signInScreen(
             onBackClick = { navController.popBackStack() },
-            onMainClick = { id ->
-                navController.navigateToPhotoFace(memberId = id)
+            onMainClick = {
+                navController.navigateToPhotoFace(memberId = 0L)
             },
             onErrorToast = onErrorToast,
-            onSignUpClick = { navController.navigate(SignUpRoute) }
-        )
-
-        signUpScreen(
-            onBackClick = { navController.popBackStack() },
-            onSignInClick = { navController.popBackStack() },
-            onErrorToast = onErrorToast
+            onSignUpClick = {}
         )
 
         photoFaceScreen(
