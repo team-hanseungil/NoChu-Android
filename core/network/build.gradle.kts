@@ -12,7 +12,7 @@ android {
     buildFeatures {
         buildConfig = true
         defaultConfig {
-            buildConfigField("String", "BASE_URL", "\"https://api.gwangsan.io.kr:28668\"")
+            buildConfigField("String", "BASE_URL", "\"http://service.gsmsv.site:22104/\"")
         }
     }
 }
