@@ -6,19 +6,18 @@ import com.school_of_company.model.auth.response.TokenResponseModel
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 
+// AuthRepository.kt 파일을 찾아서 아래와 같이 수정해 주세요.
+
 interface AuthRepository {
-
     fun loginWithSpotify(code: String): Flow<TokenResponseModel>
-
     fun refreshToken(refreshToken: String): Flow<TokenResponseModel>
-
     fun logout(): Flow<Unit>
 
     fun signLogout(): Flow<Unit>
 
-    fun musicRR(memberId: Long): Flow<PlaylistResponseModel>
+    fun musicRR(): Flow<PlaylistResponseModel>
 
-    fun postFace(memberId: Long, image: MultipartBody.Part): Flow<EmotionResponseModel>
+    fun postFace(image: MultipartBody.Part): Flow<EmotionResponseModel>
 
     fun getRefreshToken(): Flow<String>
 

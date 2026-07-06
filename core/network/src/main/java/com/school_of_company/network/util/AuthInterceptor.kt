@@ -13,7 +13,6 @@ class AuthInterceptor @Inject constructor(
 
     private companion object {
         const val POST = "POST"
-        const val PATCH = "PATCH"
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -22,25 +21,25 @@ class AuthInterceptor @Inject constructor(
         val method = request.method
 
         val accessToken = runBlocking { dataSource.getAccessToken().first() }
-        val refreshToken = runBlocking { dataSource.getRefreshToken().first() }
 
         val newRequest = when {
-            // 회원가입, 로그인은 헤더 없이
-            path.contains("/api/auth/") && method == POST -> {
+            // ⭕ 스포티파이 로그인/회원가입 API는 토큰 없이 요청
+            (path.contains("/auth/spotify") || path.contains("/api/auth/")) && method == POST -> {
                 request
             }
-
 
             path.contains("/api/sms") && method == POST -> {
                 request
             }
 
-            // 토큰 재발급은 refreshToken 사용
-            path.endsWith("/api/auth/reissue") && method == PATCH -> {
-                request.newBuilder().addHeader("RefreshToken"," $refreshToken").build()
+            // ⭕ AuthAPI에 정의된 토큰 재발급 주소는 /auth/refresh (POST) 임.
+            // 단, 재발급은 Authenticator 내에서 빌더를 새로 파서 처리하므로
+            // 인터셉터에서는 헤더를 건드리지 않고 그대로 통과시킵니다.
+            path.contains("/auth/refresh") && method == POST -> {
+                request
             }
 
-            // 로그아웃, 회원탈퇴 등 그 외는 accessToken 사용
+            // 그 외 모든 API 요청에는 Access Token 탑재
             else -> {
                 request.newBuilder().addHeader("Authorization", "Bearer $accessToken").build()
             }

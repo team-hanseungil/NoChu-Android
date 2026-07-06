@@ -3,9 +3,9 @@ package com.school_of_company.network.datasource.auth
 import com.school_of_company.network.api.AuthAPI
 import com.school_of_company.network.dto.auth.requset.SpotifyLoginRequest
 import com.school_of_company.network.dto.auth.requset.RefreshTokenRequest
-import com.school_of_company.network.dto.reponse.TokenResponse
-import com.school_of_company.network.dto.reponse.EmotionResponse
-import com.school_of_company.network.dto.reponse.PlaylistResponse
+import com.school_of_company.network.dto.auth.reponse.TokenResponse
+import com.school_of_company.network.dto.auth.reponse.EmotionResponse
+import com.school_of_company.network.dto.auth.reponse.PlaylistResponse
 import com.school_of_company.network.util.performApiRequest
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
@@ -27,9 +27,9 @@ class AuthDataSourceImpl @Inject constructor(
     override fun signLogout(): Flow<Unit> =
         performApiRequest { authAPI.signLogout() }
 
-    override fun musicRR(memberId: Long): Flow<PlaylistResponse> =
-        performApiRequest { authAPI.musicRR(memberId = memberId) }
+    override fun musicRR(): Flow<PlaylistResponse> =
+        performApiRequest { authAPI.musicRR() }
 
-    override fun postFace(memberId: Long, image: MultipartBody.Part): Flow<EmotionResponse> =
-        performApiRequest { authAPI.postFace(memberId = memberId, image = image) }
+    override fun postFace(image: MultipartBody.Part): Flow<EmotionResponse> =
+        performApiRequest { authAPI.postFace(image = image) }
 }

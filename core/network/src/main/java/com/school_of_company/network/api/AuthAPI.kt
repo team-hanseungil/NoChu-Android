@@ -1,17 +1,16 @@
 package com.school_of_company.network.api
 
-import com.school_of_company.network.dto.reponse.TokenResponse
+import com.school_of_company.network.dto.auth.reponse.TokenResponse
 import com.school_of_company.network.dto.auth.requset.SpotifyLoginRequest
 import com.school_of_company.network.dto.auth.requset.RefreshTokenRequest
-import com.school_of_company.network.dto.reponse.EmotionResponse
-import com.school_of_company.network.dto.reponse.PlaylistResponse
+import com.school_of_company.network.dto.auth.reponse.EmotionResponse
+import com.school_of_company.network.dto.auth.reponse.PlaylistResponse
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
-import retrofit2.http.Path
 
 interface AuthAPI {
 
@@ -31,15 +30,14 @@ interface AuthAPI {
     @DELETE("/api/auth/out")
     suspend fun signLogout()
 
+    // ⭕ {memberId}와 @Path 제거
     @Multipart
-    @POST("/api/emotions/{memberId}")
+    @POST("/api/emotions")
     suspend fun postFace(
-        @Path("memberId") memberId: Long,
         @Part image: MultipartBody.Part
     ): EmotionResponse
 
-    @POST("/api/music/{memberId}")
-    suspend fun musicRR(
-        @Path("memberId") memberId: Long,
-    ): PlaylistResponse
+    // ⭕ {memberId}와 @Path 제거
+    @POST("/api/music")
+    suspend fun musicRR(): PlaylistResponse
 }

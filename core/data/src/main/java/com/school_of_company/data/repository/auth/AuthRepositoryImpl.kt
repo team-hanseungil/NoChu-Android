@@ -33,14 +33,14 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun signLogout(): Flow<Unit> = remoteDatasource.signLogout()
 
-    override fun musicRR(memberId: Long): Flow<PlaylistResponseModel> {
-        return remoteDatasource.musicRR(memberId = memberId).transform { response ->
+    override fun musicRR(): Flow<PlaylistResponseModel> {
+        return remoteDatasource.musicRR().transform { response ->
             emit(response.toModel())
         }
     }
 
-    override fun postFace(memberId: Long, image: MultipartBody.Part): Flow<EmotionResponseModel> {
-        return remoteDatasource.postFace(memberId = memberId, image = image).transform { response ->
+    override fun postFace(image: MultipartBody.Part): Flow<EmotionResponseModel> {
+        return remoteDatasource.postFace(image = image).transform { response ->
             emit(response.toModel())
         }
     }

@@ -15,8 +15,17 @@ class AuthTokenDataSourceImpl @Inject constructor(
     }
 
     override suspend fun setAccessToken(accessToken: String) {
+        android.util.Log.d("TOKEN_SAVE_CHECK", "Access Token 저장 시도: $accessToken")
         authToken.updateData {
             it.toBuilder().setAccessToken(accessToken).build()
+        }
+    }
+
+    override suspend fun setRefreshToken(refreshToken: String) {
+        // 🔴 Refresh Token 저장 로그 (매개변수명 완벽 일치)
+        android.util.Log.d("TOKEN_SAVE_CHECK", "Refresh Token 저장 시도: $refreshToken")
+        authToken.updateData {
+            it.toBuilder().setRefreshToken(refreshToken).build()
         }
     }
 
@@ -44,12 +53,6 @@ class AuthTokenDataSourceImpl @Inject constructor(
 
     override fun getRefreshToken(): Flow<String> = authToken.data.map {
         it.refreshToken
-    }
-
-    override suspend fun setRefreshToken(refreshToken: String) {
-        authToken.updateData {
-            it.toBuilder().setRefreshToken(refreshToken).build()
-        }
     }
 
     override suspend fun removeRefreshToken() {
