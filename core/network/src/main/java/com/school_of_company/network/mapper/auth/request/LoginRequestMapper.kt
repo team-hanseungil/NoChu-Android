@@ -10,10 +10,10 @@ import com.school_of_company.model.auth.request.TrackModel
 import com.school_of_company.network.dto.auth.requset.LoginRequest
 import com.school_of_company.network.dto.auth.requset.SpotifyLoginRequest
 import com.school_of_company.network.dto.auth.requset.RefreshTokenRequest
-import com.school_of_company.network.dto.reponse.EmotionResponse
-import com.school_of_company.network.dto.reponse.Emotions
-import com.school_of_company.network.dto.reponse.PlaylistResponse
-import com.school_of_company.network.dto.reponse.Track
+import com.school_of_company.network.dto.auth.reponse.EmotionResponse
+import com.school_of_company.network.dto.auth.reponse.Emotions
+import com.school_of_company.network.dto.auth.reponse.PlaylistResponse
+import com.school_of_company.network.dto.auth.reponse.Track
 
 fun LoginRequestModel.toDto(): LoginRequest =
     LoginRequest(

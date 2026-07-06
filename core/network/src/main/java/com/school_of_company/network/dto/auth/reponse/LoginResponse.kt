@@ -1,5 +1,4 @@
-// reponse/TokenResponse.kt (기존 LoginResponse.kt에 추가)
-package com.school_of_company.network.dto.reponse
+package com.school_of_company.network.dto.auth.reponse
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

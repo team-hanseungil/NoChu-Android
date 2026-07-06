@@ -1,4 +1,3 @@
-// requset/SpotifyLoginRequest.kt (기존 requset 패키지에 추가)
 package com.school_of_company.network.dto.auth.requset
 
 import com.squareup.moshi.Json

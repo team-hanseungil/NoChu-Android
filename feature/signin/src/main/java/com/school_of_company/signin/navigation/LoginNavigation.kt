@@ -12,7 +12,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.school_of_company.nochumain.PhotoUploadRoute
+import com.school_of_company.signin.view.PhotoUploadRoute
 import com.school_of_company.signin.view.PlaylistDetailContent
 import com.school_of_company.signin.view.SignInRoute
 import com.school_of_company.signin.view.lPlaylistDetailContent
@@ -28,10 +28,8 @@ private const val PhotoFaceRouteWithArg = "$PhotoFaceRoute/{$MEMBER_ID_ARG}"
 const val MUSIC_DETAIL_ID_ARG = "playlistId"
 const val MUSIC_DETAIL_ROUTE = "music_detail_route/{$MUSIC_DETAIL_ID_ARG}"
 
+// memberId 아규먼트 제거
 const val MUSIC_RECOMMEND_ROUTE = "musicrecommend"
-private const val MUSIC_RECOMMEND_MEMBER_ID_ARG = "memberId"
-private const val MUSIC_RECOMMEND_ROUTE_WITH_ARG =
-    "$MUSIC_RECOMMEND_ROUTE/{$MUSIC_RECOMMEND_MEMBER_ID_ARG}"
 
 fun NavGraphBuilder.musicDetailScreen(
     onBackClick: () -> Unit
@@ -83,17 +81,14 @@ fun NavGraphBuilder.musicRecommendScreen(
     onBackClick: () -> Unit
 ) {
     composable(
-        route = MUSIC_RECOMMEND_ROUTE_WITH_ARG,
-        arguments = listOf(
-            navArgument(MUSIC_RECOMMEND_MEMBER_ID_ARG) { type = NavType.LongType }
-        )
-    ) { backStackEntry ->
-        val memberId = backStackEntry.arguments?.getLong(MUSIC_RECOMMEND_MEMBER_ID_ARG) ?: 0L
+        route = MUSIC_RECOMMEND_ROUTE // Argument가 없는 라우트로 변경
+    ) {
         val viewModel: SignInViewModel = hiltViewModel()
         val detailUiState = viewModel.musicRRState.collectAsState()
 
-        LaunchedEffect(memberId) {
-            viewModel.musicRR(memberId, null)
+        // 인자에서 memberId 제거하고 comment 위치에 null 전달
+        LaunchedEffect(Unit) {
+            viewModel.musicRR(null)
         }
 
         com.school_of_company.design_system.theme.GwangSanTheme { colors, typography ->
@@ -118,17 +113,11 @@ fun NavGraphBuilder.musicRecommendScreen(
     }
 }
 
+// memberId 파라미터 완전 제거
 fun NavController.navigateToMusicRecommend(
-    memberId: Long,
     navOptions: NavOptions? = null
 ) {
-    this.navigate(
-        MUSIC_RECOMMEND_ROUTE_WITH_ARG.replace(
-            "{$MUSIC_RECOMMEND_MEMBER_ID_ARG}",
-            memberId.toString()
-        ),
-        navOptions
-    )
+    this.navigate(MUSIC_RECOMMEND_ROUTE, navOptions)
 }
 
 fun NavController.navigateToStart(navOptions: NavOptions? = null) {
@@ -164,7 +153,7 @@ fun NavController.navigateToPhotoFace(
 
 fun NavGraphBuilder.photoFaceScreen(
     onBackClick: () -> Unit,
-    onNavigateToMusicRecommend: (Long) -> Unit
+    onNavigateToMusicRecommend: () -> Unit // (Long) -> Unit 에서 파라미터가 없도록 변경
 ) {
     composable(
         route = PhotoFaceRouteWithArg,
