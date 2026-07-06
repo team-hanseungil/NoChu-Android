@@ -8,7 +8,8 @@ import javax.inject.Inject
 class EmotionRepositoryImpl @Inject constructor(
     private val emotionDataSource: EmotionDataSource
 ) : EmotionRepository {
-    override fun getEmotionHistory(memberId: Long): Flow<EmotionHistoryResponse> {
-        return emotionDataSource.getEmotionHistory(memberId)
+
+    override fun getEmotionHistory(): Flow<EmotionHistoryResponse> {
+        return emotionDataSource.getEmotionHistory()
     }
 }
