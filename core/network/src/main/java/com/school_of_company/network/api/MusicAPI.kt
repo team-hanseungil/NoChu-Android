@@ -9,26 +9,16 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface MusicAPI {
-    /**
-     * 특정 멤버(사용자)의 감정 기반 추천 플레이리스트 목록을 조회합니다.
-     * @param memberId 조회할 멤버의 ID입니다.
-     */
-    @GET("/api/playlists/member/{memberId}")
-    suspend fun getPlaylists(
-        @Path("memberId") memberId: Long
-    ): PlaylistListResponse
-    /**
-     * 특정 ID를 가진 플레이리스트의 상세 정보를 조회합니다.
-     * @param playlistId 조회할 플레이리스트의 ID입니다.
-     */
-    @GET("/api/playlists/{playlistId}") // <-- 새로운 API 추가
+    @GET("/api/playlists/my") // 👈 서버 명세서에 맞춰 엔드포인트를 적절히 수정해 주세요 (예: "/api/playlists")
+    suspend fun getPlaylists(): PlaylistListResponse
+
+    @GET("/api/playlists/{playlistId}")
     suspend fun getPlaylistDetail(
         @Path("playlistId") playlistId: Long
     ): PlaylistDetailResponse
 
-    @POST("api/music/{memberId}")
+    @POST("api/music")
     suspend fun postMusicRecommend(
-        @Path("memberId") memberId: Long,
         @Body body: PlaylistRequest
     ): PlaylistDetailResponse
 }

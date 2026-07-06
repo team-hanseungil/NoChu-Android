@@ -13,14 +13,14 @@ class MusicRepositoryImpl @Inject constructor(
     private val musicDataSource: MusicDataSource
 ) : MusicRepository {
 
-    override fun getPlaylists(memberId: Long): Flow<PlaylistListModel> =
-        musicDataSource.getPlaylists(memberId).map { it.toModel() }
+    override fun getPlaylists(): Flow<PlaylistListModel> =
+        musicDataSource.getPlaylists().map { it.toModel() }
 
     override fun getPlaylistDetail(playlistId: Long): Flow<PlaylistDetailModel> =
         musicDataSource.getPlaylistDetail(playlistId).map { it.toModel() }
 
-    override fun postMusicRecommend(memberId: Long, comment: String?): Flow<PlaylistDetailModel> =
-        musicDataSource.postMusicRecommend(memberId, comment).map { dto ->
+    override fun postMusicRecommend(comment: String?): Flow<PlaylistDetailModel> =
+        musicDataSource.postMusicRecommend(comment).map { dto ->
             PlaylistDetailModel(
                 id = dto.id,
                 title = dto.title,

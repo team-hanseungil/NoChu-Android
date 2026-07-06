@@ -12,12 +12,12 @@ class MusicDataSourceImpl @Inject constructor(
     private val musicAPI: MusicAPI
 ) : MusicDataSource {
 
-    override fun getPlaylists(memberId: Long): Flow<PlaylistListResponse> =
-        performApiRequest { musicAPI.getPlaylists(memberId) }
+    override fun getPlaylists(): Flow<PlaylistListResponse> =
+        performApiRequest { musicAPI.getPlaylists() }
 
     override fun getPlaylistDetail(playlistId: Long): Flow<PlaylistDetailResponse> =
         performApiRequest { musicAPI.getPlaylistDetail(playlistId) }
 
-    override fun postMusicRecommend(memberId: Long, comment: String?): Flow<PlaylistDetailResponse> =  // 추가
-        performApiRequest { musicAPI.postMusicRecommend(memberId, PlaylistRequest(comment)) }
+    override fun postMusicRecommend(comment: String?): Flow<PlaylistDetailResponse> =
+        performApiRequest { musicAPI.postMusicRecommend(PlaylistRequest(comment)) }
 }

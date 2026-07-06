@@ -57,7 +57,7 @@ fun MusicScreen(
 
     LaunchedEffect(memberId) {
         android.util.Log.d("MusicScreen", "Fetching playlists for memberId: $memberId")
-        viewModel.fetchPlaylists(memberId)
+        viewModel.fetchPlaylists()
     }
 
     LaunchedEffect(selectedPlaylistId) {

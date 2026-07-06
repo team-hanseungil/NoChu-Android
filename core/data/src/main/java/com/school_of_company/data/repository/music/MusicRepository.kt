@@ -5,7 +5,9 @@ import com.school_of_company.model.music.response.PlaylistListModel
 import kotlinx.coroutines.flow.Flow
 
 interface MusicRepository {
-    fun getPlaylists(memberId: Long): Flow<PlaylistListModel>
+    fun getPlaylists(): Flow<PlaylistListModel>
+
     fun getPlaylistDetail(playlistId: Long): Flow<PlaylistDetailModel>
-    fun postMusicRecommend(memberId: Long, comment: String?): Flow<PlaylistDetailModel>
+
+    fun postMusicRecommend(comment: String?): Flow<PlaylistDetailModel>
 }

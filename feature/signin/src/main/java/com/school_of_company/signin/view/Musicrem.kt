@@ -52,7 +52,7 @@ fun MusicScreen(
     val uiState by viewModel.musicRRState.collectAsState()
 
     LaunchedEffect(memberId) {
-        viewModel.musicRR(memberId, null)
+        viewModel.musicRR(null)
     }
 
     GwangSanTheme { colors, typography ->
