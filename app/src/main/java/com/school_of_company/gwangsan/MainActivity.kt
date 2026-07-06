@@ -8,8 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.activity.viewModels
-import com.school_of_company.main.navgation.MainRoute
-import com.school_of_company.signin.navigation.StartRoute
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
@@ -20,7 +18,6 @@ import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.device.manager.DeviceTokenManager
 import com.school_of_company.main.navgation.MainStartRoute
 import com.school_of_company.signin.navigation.SignInRoute
-import com.school_of_company.signin.navigation.StartRoute
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -47,10 +44,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             if (viewModel.appLoginState.value is AppLoginState.Loading) return@setContent
-            val startDestination = when (viewModel.appLoginState.value) {
-                is AppLoginState.Success -> MainStartRoute// 로그인 성공시 홈으로
-                else ->  SignInRoute// 그 외에는 로그인 화면으로
-            }
+            val startDestination = SignInRoute
             CompositionLocalProvider {
                 GwangSanTheme { _, _ ->
                     GwangSanApp(

@@ -63,10 +63,8 @@ interface PostAPI {
         @Path("product_id") postId: Long
     )
 
-    @GET("/api/emotions/{memberId}")
-    suspend fun getEmotionHistoryByMemberId(
-        @Path("memberId") memberId: Long
-    ): EmotionHistoryResponse
+    @GET("emotions")
+    suspend fun getEmotionHistory(): EmotionHistoryResponse
 
     fun otherPostInformation(type: String?, mode: String?, memberId: Long): List<AllPostDto>
 }

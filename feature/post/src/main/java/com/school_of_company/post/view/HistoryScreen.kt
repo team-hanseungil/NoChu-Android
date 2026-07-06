@@ -31,13 +31,10 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Locale
 
-const val DEFAULT_EMOJI = "😶" // 중립적인 얼굴로 변경
-const val EMOJI_SIZE = 40.0 // 40.sp
-
-const val EMOJI_CONTAINER_SIZE = 56.0 // 56.dp
-
-const val EMOJI_CONTAINER_CORNER_RADIUS = 8.0 // 8.dp
-
+const val DEFAULT_EMOJI = "😶"
+const val EMOJI_SIZE = 40.0
+const val EMOJI_CONTAINER_SIZE = 56.0
+const val EMOJI_CONTAINER_CORNER_RADIUS = 8.0
 const val DATE_ICON = "📅"
 
 val emotionEmojis: Map<String, String> = mapOf(
@@ -54,32 +51,20 @@ val emotionEmojis: Map<String, String> = mapOf(
     "분노" to "😡",
 )
 
-/**
- * 감정 기록 화면의 메인 컴포넌트입니다.
- * PostViewModel에 통합된 감정 기록 조회 기능을 사용합니다.
- */
 @Composable
 fun HistoryScreen(
-    // PostViewModel을 Hilt를 통해 주입받아 사용합니다.
     viewModel: PostViewModel = hiltViewModel()
 ) {
-    // PostViewModel의 emotionHistoryUiState를 관찰합니다.
     val uiState by viewModel.emotionHistoryUiState.collectAsState()
 
-    // 임시 멤버 ID (PostViewModel에서 사용된 값과 동일하게 가정)
-    val currentMemberId: Long = 1L
-
-    // 화면이 처음 나타날 때 데이터를 로드합니다.
     LaunchedEffect(Unit) {
-        viewModel.loadEmotionHistory(currentMemberId)
+        viewModel.loadEmotionHistory()
     }
 
-    // GwangSanTheme 적용
     GwangSanTheme { colors, typography ->
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                // 배경색을 디자인 시스템의 gray100 (Color(0xFFF5F6F8) 또는 유사 색상)으로 설정
                 .background(GwangSanColor.gray100)
         ) { paddingValues ->
             Column(
@@ -88,23 +73,19 @@ fun HistoryScreen(
                     .padding(paddingValues)
                     .padding(horizontal = 24.dp)
             ) {
-                // --- 헤더 영역 ---
                 Text(
                     text = "감정 기록",
-                    // titleLarge (fontSize = 30.sp, fontWeight = SemiBold) 사용
                     style = typography.titleLarge,
                     color = GwangSanColor.black,
                     modifier = Modifier.padding(top = 16.dp)
                 )
                 Text(
                     text = "지금까지의 감정 분석 기록입니다",
-                    // body5 (fontSize = 14.sp, fontWeight = Normal) 사용
                     style = typography.body5,
-                    color = GwangSanColor.gray700, // Color.Gray 대신 gray700 사용
+                    color = GwangSanColor.gray700,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
-                // --- UI 상태에 따른 화면 분기 ---
                 when (uiState) {
                     HistoryUiState.Loading -> LoadingState()
                     is HistoryUiState.Success -> HistoryContent(
@@ -120,14 +101,10 @@ fun HistoryScreen(
     }
 }
 
-// ----------------------------------------------------------------------
-// --- UI 상태별 컴포넌트 ---
-// ----------------------------------------------------------------------
-
 @Composable
 fun LoadingState() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(color = GwangSanColor.main500) // main500 사용
+        CircularProgressIndicator(color = GwangSanColor.main500)
     }
 }
 
@@ -137,7 +114,7 @@ fun EmptyState(typography: GwangSanTypography) {
         Text(
             text = "기록된 감정 분석 결과가 없습니다.",
             color = GwangSanColor.gray700,
-            style = typography.body4 // body4 (fontSize = 16.sp, fontWeight = Normal) 사용
+            style = typography.body4
         )
     }
 }
@@ -147,8 +124,8 @@ fun ErrorState(message: String, typography: GwangSanTypography) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = "오류 발생: $message",
-            color = GwangSanColor.error, // error 색상 사용
-            style = typography.body4 // body4 (fontSize = 16.sp, fontWeight = Normal) 사용
+            color = GwangSanColor.error,
+            style = typography.body4
         )
     }
 }
@@ -159,22 +136,18 @@ fun HistoryContent(
     colors: ColorTheme,
     typography: GwangSanTypography
 ) {
-    // 통계 요약 카드
     StatisticsCard(response = response, colors = colors, typography = typography)
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // 신뢰도 바 색상 설정 (purple 변수를 사용하여 일관성 유지)
     val fixedProgressBarColor = colors.purple
     val trackColor = colors.gray200
 
-    // 감정 기록 목록
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(bottom = 16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        // EmotionRecordItem 로직 통합
         items(response.emotions) { record ->
             EmotionRecordItem(record = record, typography = typography, fixedProgressBarColor = fixedProgressBarColor, trackColor = trackColor)
         }
@@ -199,7 +172,6 @@ fun EmotionRecordItem(
         record.date
     }
 
-    // 감정에 맞는 이모지를 찾거나 기본 이모지를 사용합니다.
     val emoji = emotionEmojis[record.emotion] ?: DEFAULT_EMOJI
 
     Card(
@@ -214,40 +186,36 @@ fun EmotionRecordItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // --- 이모지 아이콘 영역 ---
             Box(
                 modifier = Modifier
-                    .size(EMOJI_CONTAINER_SIZE.dp) // 56.dp
-                    .clip(RoundedCornerShape(EMOJI_CONTAINER_CORNER_RADIUS.dp)) // 8.dp
-                    .background(GwangSanColor.gray200), // 배경색 유지
+                    .size(EMOJI_CONTAINER_SIZE.dp)
+                    .clip(RoundedCornerShape(EMOJI_CONTAINER_CORNER_RADIUS.dp))
+                    .background(GwangSanColor.gray200),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = emoji,
-                    fontSize = EMOJI_SIZE.sp // 40.sp
+                    fontSize = EMOJI_SIZE.sp
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                // 날짜 정보
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = DATE_ICON, style = typography.caption) // 📅 아이콘
+                    Text(text = DATE_ICON, style = typography.caption)
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = dateText, style = typography.caption, color = GwangSanColor.gray700)
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                // 감정 이름
                 Text(
                     text = record.emotion,
-                    style = typography.body1, // 18.sp SemiBold
+                    style = typography.body1,
                     color = GwangSanColor.black
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 신뢰도 바 (커스텀)
-                val confidenceRatio = record.confidence / 100f // Int를 Float으로 변환하여 비율 계산
+                val confidenceRatio = record.confidence / 100f
 
                 Box(
                     modifier = Modifier
@@ -264,10 +232,9 @@ fun EmotionRecordItem(
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                // 신뢰도 텍스트
                 Text(
                     text = "${record.confidence}% 신뢰도",
-                    style = typography.caption, // 12.sp Normal
+                    style = typography.caption,
                     color = GwangSanColor.gray700
                 )
             }
@@ -275,14 +242,8 @@ fun EmotionRecordItem(
     }
 }
 
-
-// ----------------------------------------------------------------------
-// --- 하위 UI 컴포넌트 ---
-// ----------------------------------------------------------------------
-
 @Composable
 fun StatisticsCard(response: EmotionHistoryResponse, colors: ColorTheme, typography: GwangSanTypography) {
-    // subPOPule(0xFF5E5BD6)와 purple(0xFF9E7FFF) 색상을 통계 항목에 사용
     val primaryColor = colors.subPOPule
     val secondaryColor = colors.purple
 
@@ -325,7 +286,6 @@ fun StatisticItem(value: String, label: String, valueColor: Color, typography: G
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = value,
-            // titleLarge 기반, 크기만 32.sp로 조정
             style = typography.titleLarge.copy(fontSize = 32.sp),
             color = valueColor
         )
@@ -337,13 +297,6 @@ fun StatisticItem(value: String, label: String, valueColor: Color, typography: G
     }
 }
 
-// ----------------------------------------------------------------------
-// --- Preview 컴포넌트 ---
-// ----------------------------------------------------------------------
-
-/**
- * 데이터가 성공적으로 로드된 상태의 미리보기를 위한 Mock 데이터
- */
 private val mockHistoryResponse = EmotionHistoryResponse(
     totalRecords = 12,
     averageConfidence = 78,
@@ -360,9 +313,6 @@ private val mockHistoryResponse = EmotionHistoryResponse(
     )
 )
 
-/**
- * Preview: HistoryContent (통계 및 목록)만 미리보기
- */
 @Preview(showBackground = true, name = "History Content Success")
 @Composable
 fun PreviewHistoryContent() {
@@ -370,7 +320,7 @@ fun PreviewHistoryContent() {
         Column(
             modifier = Modifier
                 .padding(24.dp)
-                .background(GwangSanColor.gray100) // 디자인 시스템 색상 적용
+                .background(GwangSanColor.gray100)
         ) {
             Text(
                 text = "감정 기록",
@@ -389,9 +339,6 @@ fun PreviewHistoryContent() {
     }
 }
 
-/**
- * Preview: 전체 화면 미리보기 (Mock 상태)
- */
 @Preview(showBackground = true, name = "History Screen Full Preview")
 @Composable
 fun PreviewHistoryScreen() {
@@ -402,9 +349,8 @@ fun PreviewHistoryScreen() {
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(horizontal = 24.dp)
-                    .background(GwangSanColor.gray100) // 디자인 시스템 색상 적용
+                    .background(GwangSanColor.gray100)
             ) {
-                // --- 헤더 영역 ---
                 Text(
                     text = "감정 기록",
                     style = typography.titleLarge,
@@ -418,7 +364,6 @@ fun PreviewHistoryScreen() {
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
-                // Mock Success State Content
                 HistoryContent(response = mockHistoryResponse, colors = colors, typography = typography)
             }
         }

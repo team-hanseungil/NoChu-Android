@@ -89,8 +89,9 @@ class SignInViewModel @Inject constructor(
 
     // ========================= 음악 로직 ==========================
 
-    internal fun fetchPlaylists(memberId: Long) = viewModelScope.launch {
-        musicRepository.getPlaylists(memberId)
+    // 헤더로 처리하므로 memberId 파라미터 제거
+    internal fun fetchPlaylists() = viewModelScope.launch {
+        musicRepository.getPlaylists()
             .asResult()
             .collectLatest { result ->
                 when (result) {
@@ -107,9 +108,10 @@ class SignInViewModel @Inject constructor(
             }
     }
 
-    internal fun musicRR(memberId: Long, comment: String?) = viewModelScope.launch {
+    // 헤더로 처리하므로 memberId 파라미터 제거 및 comment만 전달
+    internal fun musicRR(comment: String?) = viewModelScope.launch {
         _musicRRState.value = MusicRR.Loading
-        musicRepository.postMusicRecommend(memberId, comment)
+        musicRepository.postMusicRecommend(comment)
             .asResult()
             .collectLatest { result ->
                 when (result) {
@@ -140,7 +142,7 @@ class SignInViewModel @Inject constructor(
 
     // ========================= 기타 로직 ==========================
 
-    internal fun postFace(memberId: Long, context: Context, image: Uri) = viewModelScope.launch {
+    internal fun postFace(context: Context, image: Uri) = viewModelScope.launch {
         _postFaceUiState.value = PostFaceUiState.Loading
 
         val multipartFile = getMultipartFile(context, image)
@@ -151,7 +153,7 @@ class SignInViewModel @Inject constructor(
                 return@launch
             }
 
-        authRepository.postFace(memberId, multipartFile)
+        authRepository.postFace(image = multipartFile)
             .asResult()
             .collectLatest { result ->
                 when (result) {

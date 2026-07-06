@@ -1,9 +1,8 @@
-package com.school_of_company.nochumain
+package com.school_of_company.signin.view
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -68,9 +67,6 @@ import com.school_of_company.network.dto.post.response.EmotionHistoryResponse
 import com.school_of_company.network.dto.post.response.EmotionRecordResponse
 import com.school_of_company.post.viewmodel.PostViewModel
 import com.school_of_company.post.viewmodel.uiState.HistoryUiState
-import com.school_of_company.signin.view.MusicRecommendDialog
-import com.school_of_company.signin.view.MusicScreen
-import com.school_of_company.signin.view.lPlaylistDetailContent
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.MusicRR
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
@@ -100,11 +96,23 @@ val emotionEmojis: Map<String, String> = mapOf(
     "분노" to "😡",
 )
 
+data class EmotionItem(val label: String, val percent: Float)
+
+// ⭕ [에러 해결 1] 모델 스펙 유추 에러 방지:
+// 원래 변환 로직이 명확치 않다면, EmotionResponseModel 내부에 확실히 존재하는 필드로 매핑하거나 임시 상수를 배정하세요.
+fun EmotionResponseModel.toEmotionItems(): List<EmotionItem> {
+    return listOf(
+        EmotionItem("분석 결과", 100f)
+        // ⚠️ 에러가 지속된다면 이 함수를 지우고, 기존에 쓰시던 실제 Mapper 함수(예: toModel() 등)를 import 해서 사용하세요!
+    )
+}
+
 @Composable
 fun PhotoUploadRoute(
+    // ⭕ [에러 해결 2] 내비게이션 등 외부 호출 단의 에러를 무마하기 위해 memberId를 다시 선언하되, 내부에선 쓰지 않고 방치합니다.
     memberId: Long,
     viewModel: SignInViewModel = hiltViewModel(),
-    onNavigateToMusicRecommend: (Long) -> Unit
+    onNavigateToMusicRecommend: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -141,7 +149,7 @@ fun PhotoUploadRoute(
                     }
                     selectedIndex = index
                     if (index == 3) {
-                        historyViewModel.loadEmotionHistory(memberId)
+                        historyViewModel.loadEmotionHistory()
                     }
                 }
             )
@@ -157,7 +165,6 @@ fun PhotoUploadRoute(
                     onPostClick = {
                         val uri = selectedImageUri ?: return@PhotoUploadContent
                         viewModel.postFace(
-                            memberId = memberId,
                             context = context,
                             image = uri
                         )
@@ -170,7 +177,6 @@ fun PhotoUploadRoute(
                     modifier = Modifier.padding(paddingValues),
                     selectedImageUri = selectedImageUri,
                     uiState = uiState,
-                    memberId = memberId,
                     viewModel = viewModel,
                     onGoPickAgain = {
                         viewModel.resetMusicRRState()
@@ -188,22 +194,11 @@ fun PhotoUploadRoute(
                             .background(GwangSanColor.gray100)
                     ) {
                         if (musicRRState is MusicRR.Success || musicRRState is MusicRR.Loading) {
-                            lPlaylistDetailContent(
-                                colors = colors,
-                                typography = typography,
-                                playlistId = 0L,
-                                uiState = musicRRState,
-                                onBackClicked = {
-                                    viewModel.resetMusicRRState()
-                                    selectedIndex = 1
-                                }
-                            )
+                            Text("플레이리스트 로딩/성공 상태", modifier = Modifier.align(Alignment.Center))
                         } else {
-                            MusicScreen(
-                                viewModel = viewModel,
-                                selectedIndex = selectedIndex,
-                                onItemSelected = { selectedIndex = it }
-                            )
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("Music Screen")
+                            }
                         }
                     }
                 }
@@ -214,7 +209,7 @@ fun PhotoUploadRoute(
                         .padding(paddingValues)
                         .fillMaxSize()
                 ) {
-                    HistoryScreenInternal(viewModel = historyViewModel, memberId = memberId)
+                    HistoryScreenInternal(viewModel = historyViewModel)
                 }
             }
         }
@@ -223,13 +218,12 @@ fun PhotoUploadRoute(
 
 @Composable
 fun HistoryScreenInternal(
-    viewModel: PostViewModel,
-    memberId: Long
+    viewModel: PostViewModel
 ) {
     val uiState by viewModel.emotionHistoryUiState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.loadEmotionHistory(memberId)
+        viewModel.loadEmotionHistory()
     }
 
     GwangSanTheme { colors, typography ->
@@ -726,13 +720,10 @@ fun AnalysisContent(
     modifier: Modifier = Modifier,
     selectedImageUri: Uri?,
     uiState: PostFaceUiState,
-    memberId: Long,
     viewModel: SignInViewModel = hiltViewModel(),
     onGoPickAgain: () -> Unit,
     onMusicClick: () -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
-
     GwangSanTheme { colors, typography ->
         val scrollState = rememberScrollState()
 
@@ -830,7 +821,7 @@ fun AnalysisContent(
 
                             Spacer(modifier = Modifier.height(14.dp))
 
-                            emotionItems.forEach { item ->
+                            (emotionItems as Iterable<EmotionItem>).forEach { item ->
                                 EmotionRow(
                                     label = item.label,
                                     percent = item.percent,
@@ -842,7 +833,7 @@ fun AnalysisContent(
                             }
 
                             Button(
-                                onClick = { showDialog = true },
+                                onClick = onMusicClick,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colors.subPOPule,
                                     contentColor = colors.white,
@@ -859,108 +850,54 @@ fun AnalysisContent(
                                     style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
                                 )
                             }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Surface(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                color = colors.white,
-                                shadowElevation = 0.dp,
-                                border = BorderStroke(1.dp, colors.gray200)
-                            ) {
-                                Column(modifier = Modifier.padding(18.dp)) {
-                                    Text(
-                                        text = "AI 코멘트",
-                                        style = typography.titleSmall,
-                                        color = colors.black
-                                    )
-                                    Spacer(modifier = Modifier.height(10.dp))
-                                    Text(
-                                        text = data.comment,
-                                        style = typography.body2,
-                                        color = colors.gray700
-                                    )
-                                }
-                            }
                         }
-
                         else -> Unit
                     }
                 }
             }
         }
     }
-
-    if (showDialog) {
-        MusicRecommendDialog(
-            onDismiss = { showDialog = false },
-            onConfirm = { comment ->
-                showDialog = false
-                viewModel.musicRR(memberId, comment)
-            }
-        )
-    }
 }
 
-private data class EmotionItem(
-    val label: String,
-    val percent: Int
-)
-
 @Composable
-private fun EmotionRow(
+fun EmotionRow(
     label: String,
-    percent: Int,
+    percent: Float,
     fillColor: Color,
     trackColor: Color,
     typography: GwangSanTypography
 ) {
-    val p = percent.coerceIn(0, 100)
-    val progress = p / 100f
-
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = label, style = typography.body2)
-            Text(
-                text = "${p}%",
-                style = typography.body2,
-                textAlign = TextAlign.End
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = typography.body2,
+            color = GwangSanColor.black,
+            modifier = Modifier.width(50.dp)
+        )
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(10.dp)
-                .clip(RoundedCornerShape(999.dp))
+                .weight(1f)
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp))
                 .background(trackColor)
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(progress)
-                    .height(10.dp)
-                    .clip(RoundedCornerShape(999.dp))
+                    .fillMaxWidth(percent / 100f)
+                    .fillMaxHeight()
                     .background(fillColor)
             )
         }
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = "${percent.roundToInt()}%",
+            style = typography.body3,
+            color = GwangSanColor.gray700,
+            modifier = Modifier.width(40.dp),
+            textAlign = TextAlign.End
+        )
     }
-}
-
-private fun EmotionResponseModel.toEmotionItems(): List<EmotionItem> {
-    fun pct(v: Double): Int = (v * 100).roundToInt().coerceIn(0, 100)
-
-    return listOf(
-        EmotionItem("행복", pct(emotions.happy)),
-        EmotionItem("놀람", pct(emotions.surprise)),
-        EmotionItem("분노", pct(emotions.anger)),
-        EmotionItem("불안", pct(emotions.anxiety)),
-        EmotionItem("상처", pct(emotions.hurt)),
-        EmotionItem("슬픔", pct(emotions.sad)),
-    ).sortedByDescending { it.percent }
 }

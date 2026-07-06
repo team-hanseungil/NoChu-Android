@@ -62,8 +62,8 @@ fun GwangsanNavHost(
 
         photoFaceScreen(
             onBackClick = { navController.popBackStack() },
-            onNavigateToMusicRecommend = { memberId ->
-                navController.navigateToMusicRecommend(memberId)
+            onNavigateToMusicRecommend = {
+                navController.navigateToMusicRecommend()
             }
         )
 
