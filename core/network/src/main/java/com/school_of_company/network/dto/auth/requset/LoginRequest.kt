@@ -1,5 +1,6 @@
 package com.school_of_company.network.dto.auth.requset
 
+import com.school_of_company.network.dto.auth.reponse.SurveyDataResponse
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -20,4 +21,16 @@ data class SpotifyLoginRequest(
 @JsonClass(generateAdapter = true)
 data class RefreshTokenRequest(
     @Json(name = "refreshToken") val refreshToken: String
+)
+
+@JsonClass(generateAdapter = true)
+data class PostSurveyRequest(
+    @Json(name = "genres") val genres: List<String>,
+    @Json(name = "artists") val artists: List<String>,
+    @Json(name = "sadMoodOption") val sadMoodOption: String,
+    @Json(name = "happyMoodOption") val happyMoodOption: String
+)
+@JsonClass(generateAdapter = true)
+data class PostSurveyWrapper(
+    @Json(name = "data") val data: PostSurveyRequest
 )

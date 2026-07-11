@@ -10,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.school_of_company.data.repository.auth.AuthRepository
 import com.school_of_company.data.repository.local.LocalRepository
 import com.school_of_company.data.repository.music.MusicRepository
+import com.school_of_company.model.auth.request.PostSurveyRequestModel
+import com.school_of_company.model.auth.request.PostSurveyWrapperModel
 import com.school_of_company.network.errorHandling
 import com.school_of_company.result.asResult
 import com.school_of_company.result.Result
@@ -17,6 +19,7 @@ import com.school_of_company.signin.viewmodel.uistate.MusicRR
 import com.school_of_company.signin.viewmodel.uistate.MusicUiState
 import com.school_of_company.signin.viewmodel.uistate.PlaylistDetailUiState
 import com.school_of_company.signin.viewmodel.uistate.PostFaceUiState
+import com.school_of_company.signin.viewmodel.uistate.PostSuveyUiState
 import com.school_of_company.signin.viewmodel.uistate.SignInUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import getMultipartFile
@@ -51,6 +54,10 @@ class SignInViewModel @Inject constructor(
     private val _postFaceUiState = MutableStateFlow<PostFaceUiState>(PostFaceUiState.Idle)
     val postFaceUiState = _postFaceUiState.asStateFlow()
 
+    private val _postSuveyUiState = MutableStateFlow<PostSuveyUiState>(PostSuveyUiState.Idle)
+    val postSuveyUiState = _postSuveyUiState.asStateFlow()
+
+
     private val _currentMemberId = MutableStateFlow<Long>(0L)
     val currentMemberId = _currentMemberId.asStateFlow()
 
@@ -82,6 +89,43 @@ class SignInViewModel @Inject constructor(
                     is Result.Error -> {
                         Log.e("SignInViewModel", "Spotify login failed: ${result.exception}")
                         _signInUiState.value = SignInUiState.Error(result.exception)
+                    }
+                }
+            }
+    }
+
+
+    internal fun postSurvey(
+        genres: List<String>,
+        artists: List<String>,
+        sadMoodOption: String,
+        happyMoodOption: String
+    ) = viewModelScope.launch {
+        _postSuveyUiState.value = PostSuveyUiState.Loading
+
+        val requestModel = PostSurveyWrapperModel(
+            data = PostSurveyRequestModel(
+                genres = genres,
+                artists = artists,
+                sadMoodOption = sadMoodOption,
+                happyMoodOption = happyMoodOption
+            )
+        )
+
+        authRepository.postSurvey(body = requestModel)
+            .asResult()
+            .collectLatest { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _postSuveyUiState.value = PostSuveyUiState.Loading
+                    }
+                    is Result.Success -> {
+                        Log.d("SignInViewModel", "Survey post success")
+                        _postSuveyUiState.value = PostSuveyUiState.Success(data = requestModel)
+                    }
+                    is Result.Error -> {
+                        Log.e("SignInViewModel", "Survey post failed: ${result.exception}")
+                        _postSuveyUiState.value = PostSuveyUiState.Error(result.exception)
                     }
                 }
             }

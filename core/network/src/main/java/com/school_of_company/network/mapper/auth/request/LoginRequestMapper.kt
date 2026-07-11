@@ -4,6 +4,9 @@ import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.model.auth.request.EmotionsModel
 import com.school_of_company.model.auth.request.LoginRequestModel
 import com.school_of_company.model.auth.request.PlaylistResponseModel
+import com.school_of_company.network.dto.auth.requset.PostSurveyRequest
+import com.school_of_company.model.auth.request.PostSurveyRequestModel
+import com.school_of_company.model.auth.request.PostSurveyWrapperModel
 import com.school_of_company.model.auth.request.SpotifyLoginRequestModel
 import com.school_of_company.model.auth.request.RefreshTokenRequestModel
 import com.school_of_company.model.auth.request.TrackModel
@@ -13,7 +16,10 @@ import com.school_of_company.network.dto.auth.requset.RefreshTokenRequest
 import com.school_of_company.network.dto.auth.reponse.EmotionResponse
 import com.school_of_company.network.dto.auth.reponse.Emotions
 import com.school_of_company.network.dto.auth.reponse.PlaylistResponse
+import com.school_of_company.network.dto.auth.reponse.PostSurveyResponse
+import com.school_of_company.network.dto.auth.reponse.SurveyDataResponse
 import com.school_of_company.network.dto.auth.reponse.Track
+import com.school_of_company.network.dto.auth.requset.PostSurveyWrapper
 
 fun LoginRequestModel.toDto(): LoginRequest =
     LoginRequest(
@@ -68,3 +74,19 @@ fun Track.toModel(): TrackModel =
         previewUrl = previewUrl,
         duration = duration
     )
+fun PostSurveyRequestModel.toDto(): PostSurveyRequest =
+    PostSurveyRequest(
+        genres = genres,
+        artists = artists,
+        sadMoodOption = sadMoodOption,
+        happyMoodOption = happyMoodOption
+    )
+
+
+fun PostSurveyWrapperModel.toDto(): PostSurveyWrapper=
+    PostSurveyWrapper(
+        data = data.toDto()
+    )
+
+
+

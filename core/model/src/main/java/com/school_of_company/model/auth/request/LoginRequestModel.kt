@@ -1,5 +1,7 @@
 package com.school_of_company.model.auth.request
 
+import com.school_of_company.model.auth.response.SurveyDataModel
+
 data class LoginRequestModel(
     val nickname: String,
     val password: String,
@@ -46,3 +48,14 @@ data class EmotionsModel(
     val hurt: Double,
     val sad: Double
 )
+data class PostSurveyRequestModel(
+    val genres: List<String>,
+    val artists: List<String>,
+    val sadMoodOption: String,
+    val happyMoodOption: String
+)
+
+data class PostSurveyWrapperModel(
+    val data: PostSurveyRequestModel
+)
+

@@ -1,5 +1,6 @@
 package com.school_of_company.network.dto.auth.reponse
 
+import com.school_of_company.model.auth.response.SurveyDataModel
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -47,4 +48,21 @@ data class Track(
     @Json(name = "imageUrl") val imageUrl: String?,
     @Json(name = "spotifyUrl") val previewUrl: String,
     @Json(name = "duration") val duration: String
+)
+
+@JsonClass(generateAdapter = true)
+data class PostSurveyResponse(
+    @Json(name = "id") val id: String,
+    @Json(name = "userId") val userId: String,
+    @Json(name = "data") val data: SurveyDataResponse,
+    @Json(name = "createdAt") val createdAt: String,
+    @Json(name = "updatedAt") val updatedAt: String
+)
+
+@JsonClass(generateAdapter = true)
+data class SurveyDataResponse(
+    @Json(name = "genres") val genres: List<String>,
+    @Json(name = "artists") val artists: List<String>,
+    @Json(name = "sadMoodOption") val sadMoodOption: String,
+    @Json(name = "happyMoodOption") val happyMoodOption: String
 )
