@@ -5,6 +5,9 @@ import com.school_of_company.network.dto.auth.requset.SpotifyLoginRequest
 import com.school_of_company.network.dto.auth.requset.RefreshTokenRequest
 import com.school_of_company.network.dto.auth.reponse.EmotionResponse
 import com.school_of_company.network.dto.auth.reponse.PlaylistResponse
+import com.school_of_company.network.dto.auth.reponse.PostSurveyResponse
+import com.school_of_company.network.dto.auth.requset.PostSurveyRequest
+import com.school_of_company.network.dto.auth.requset.PostSurveyWrapper
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -26,13 +29,12 @@ interface AuthAPI {
 
     @DELETE("/api/auth/signout")
     suspend fun logout()
-
     @DELETE("/api/auth/out")
     suspend fun signLogout()
 
     // ⭕ {memberId}와 @Path 제거
     @Multipart
-    @POST("/api/emotions")
+    @POST("/emotions")
     suspend fun postFace(
         @Part image: MultipartBody.Part
     ): EmotionResponse
@@ -40,4 +42,9 @@ interface AuthAPI {
     // ⭕ {memberId}와 @Path 제거
     @POST("/api/music")
     suspend fun musicRR(): PlaylistResponse
+
+    @POST("/preferences")
+    suspend fun postSurVey(
+        @Body body: PostSurveyWrapper
+    )  : PostSurveyResponse
 }

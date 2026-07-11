@@ -18,8 +18,10 @@ import com.school_of_company.signin.navigation.musicDetailScreen
 import com.school_of_company.signin.navigation.musicRecommendScreen
 import com.school_of_company.signin.navigation.navigateToMusicRecommend
 import com.school_of_company.signin.navigation.navigateToPhotoFace
+import com.school_of_company.signin.navigation.navigateToSurvey
 import com.school_of_company.signin.navigation.photoFaceScreen
 import com.school_of_company.signin.navigation.signInScreen
+import com.school_of_company.signin.navigation.surveyScreen
 
 @Composable
 fun GwangsanNavHost(
@@ -54,10 +56,18 @@ fun GwangsanNavHost(
         signInScreen(
             onBackClick = { navController.popBackStack() },
             onMainClick = {
-                navController.navigateToPhotoFace(memberId = 0L)
+                navController.navigateToSurvey()
             },
             onErrorToast = onErrorToast,
             onSignUpClick = {}
+        )
+
+        surveyScreen(
+            onBackClick = { navController.popBackStack() },
+            onSurveyComplete = {
+                navController.navigateToPhotoFace(memberId = 0L)
+            },
+            onErrorToast = onErrorToast
         )
 
         photoFaceScreen(
@@ -70,6 +80,8 @@ fun GwangsanNavHost(
         musicDetailScreen(
             onBackClick = { navController.popBackStack() }
         )
+
+
 
         musicRecommendScreen(
             onBackClick = { navController.popBackStack() }

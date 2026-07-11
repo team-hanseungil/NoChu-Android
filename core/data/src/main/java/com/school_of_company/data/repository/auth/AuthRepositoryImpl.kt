@@ -3,9 +3,14 @@ package com.school_of_company.data.repository.auth
 import com.school_of_company.datastore.datasource.AuthTokenDataSource
 import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.model.auth.request.PlaylistResponseModel
+import com.school_of_company.model.auth.request.PostSurveyRequestModel
+import com.school_of_company.model.auth.request.PostSurveyWrapperModel
+import com.school_of_company.model.auth.response.SurveyResponseModel
 import com.school_of_company.model.auth.response.TokenResponseModel
 import com.school_of_company.network.datasource.auth.AuthDataSource
+import com.school_of_company.network.mapper.auth.request.toDto
 import com.school_of_company.network.mapper.auth.request.toModel
+import com.school_of_company.network.mapper.auth.response.toModel
 import com.school_of_company.network.mapper.auth.response.toTokenResponseModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
@@ -60,4 +65,12 @@ class AuthRepositoryImpl @Inject constructor(
         localDataSource.removeAccessTokenExp()
         localDataSource.removeRefreshTokenExp()
     }
+
+    override fun postSurvey(body: PostSurveyWrapperModel): Flow<SurveyResponseModel> {
+        return remoteDatasource.postSurvey(body = body.toDto()).transform { response ->
+            emit(response.toModel())
+        }
+    }
+
+
 }

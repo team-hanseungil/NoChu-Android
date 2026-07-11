@@ -2,6 +2,10 @@ package com.school_of_company.data.repository.auth
 
 import com.school_of_company.model.auth.request.EmotionResponseModel
 import com.school_of_company.model.auth.request.PlaylistResponseModel
+
+import com.school_of_company.model.auth.request.PostSurveyRequestModel
+import com.school_of_company.model.auth.request.PostSurveyWrapperModel
+import com.school_of_company.model.auth.response.SurveyResponseModel
 import com.school_of_company.model.auth.response.TokenResponseModel
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
@@ -26,4 +30,6 @@ interface AuthRepository {
     suspend fun saveToken(token: TokenResponseModel)
 
     suspend fun deleteTokenData()
+    fun postSurvey(body: PostSurveyWrapperModel): Flow<SurveyResponseModel>
+
 }

@@ -1,7 +1,9 @@
 package com.school_of_company.signin.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -15,6 +17,7 @@ import androidx.navigation.navArgument
 import com.school_of_company.signin.view.PhotoUploadRoute
 import com.school_of_company.signin.view.PlaylistDetailContent
 import com.school_of_company.signin.view.SignInRoute
+import com.school_of_company.signin.view.SurveyRoute
 import com.school_of_company.signin.view.lPlaylistDetailContent
 import com.school_of_company.signin.viewmodel.SignInViewModel
 
@@ -26,10 +29,25 @@ private const val MEMBER_ID_ARG = "memberId"
 private const val PhotoFaceRouteWithArg = "$PhotoFaceRoute/{$MEMBER_ID_ARG}"
 
 const val MUSIC_DETAIL_ID_ARG = "playlistId"
+const val SURVEY_ROUTE = "survey_route"
 const val MUSIC_DETAIL_ROUTE = "music_detail_route/{$MUSIC_DETAIL_ID_ARG}"
 
 // memberId 아규먼트 제거
 const val MUSIC_RECOMMEND_ROUTE = "musicrecommend"
+
+fun NavGraphBuilder.surveyScreen(
+    onBackClick: () -> Unit,
+    onSurveyComplete: () -> Unit,
+    onErrorToast: (throwable: Throwable?, message: Int?) -> Unit,
+) {
+    composable(route = SURVEY_ROUTE) {
+        SurveyRoute(
+            onBackClick = onBackClick,
+            onSurveyComplete = onSurveyComplete,
+            onErrorToast = onErrorToast,
+        )
+    }
+}
 
 fun NavGraphBuilder.musicDetailScreen(
     onBackClick: () -> Unit
@@ -149,6 +167,10 @@ fun NavController.navigateToPhotoFace(
     navOptions: NavOptions? = null
 ) {
     this.navigate("$PhotoFaceRoute/$memberId", navOptions)
+}
+
+fun NavController.navigateToSurvey(navOptions: NavOptions? = null) {
+    this.navigate(SURVEY_ROUTE, navOptions)
 }
 
 fun NavGraphBuilder.photoFaceScreen(
