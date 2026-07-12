@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class EmotionRecordResponse(
-    @Json(name = "id") val id: Long,
+    @Json(name = "id") val id: String,
     @Json(name = "date") val date: String, // yyyy-MM-dd
     @Json(name = "emotion") val emotion: String,
     @Json(name = "confidence") val confidence: Int // 0~100
