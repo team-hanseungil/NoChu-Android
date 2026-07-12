@@ -40,7 +40,7 @@ interface AuthAPI {
     ): EmotionResponse
 
     // ⭕ {memberId}와 @Path 제거
-    @POST("/api/music")
+    @POST("/music")
     suspend fun musicRR(): PlaylistResponse
 
     @POST("/preferences")

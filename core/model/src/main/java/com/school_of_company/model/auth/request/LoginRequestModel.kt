@@ -27,7 +27,7 @@ data class EmotionResponseModel(
 
 data class PlaylistResponseModel(
     val id: String,
-    val spotifyUrl: String,
+    val spotifyUrl: String?,
     val title: String,
     val imageUrl: String?,
     val tracks: List<TrackModel>

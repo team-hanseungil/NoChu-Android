@@ -106,7 +106,7 @@ fun NavGraphBuilder.musicRecommendScreen(
 
         // 인자에서 memberId 제거하고 comment 위치에 null 전달
         LaunchedEffect(Unit) {
-            viewModel.musicRR(null)
+            viewModel.musicRR()
         }
 
         com.school_of_company.design_system.theme.GwangSanTheme { colors, typography ->

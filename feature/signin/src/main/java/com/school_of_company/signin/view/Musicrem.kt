@@ -38,8 +38,9 @@ import com.school_of_company.design_system.R
 import com.school_of_company.design_system.theme.GwangSanTheme
 import com.school_of_company.design_system.theme.GwangSanTypography
 import com.school_of_company.design_system.theme.color.ColorTheme
+import com.school_of_company.model.auth.request.PlaylistResponseModel
 import com.school_of_company.model.music.response.PlaylistDetailModel
-import com.school_of_company.model.music.response.TrackModel
+import com.school_of_company.model.auth.request.TrackModel
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.MusicRR
 
@@ -52,7 +53,7 @@ fun MusicScreen(
     val uiState by viewModel.musicRRState.collectAsState()
 
     LaunchedEffect(memberId) {
-        viewModel.musicRR(null)
+        viewModel.musicRR()
     }
 
     GwangSanTheme { colors, typography ->
@@ -193,7 +194,7 @@ fun lPlaylistDetailContent(
 
 @Composable
 fun lDetailHeaderSection(
-    detail: PlaylistDetailModel,
+    detail: PlaylistResponseModel,
     colors: ColorTheme,
     typography: GwangSanTypography,
     onBackClicked: () -> Unit

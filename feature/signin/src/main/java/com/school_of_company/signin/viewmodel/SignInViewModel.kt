@@ -152,12 +152,13 @@ class SignInViewModel @Inject constructor(
             }
     }
 
-    // 헤더로 처리하므로 memberId 파라미터 제거 및 comment만 전달
-    internal fun musicRR(comment: String?) = viewModelScope.launch {
+    // SignInViewModel.musicRR 함수에 로그 추가
+    internal fun musicRR() = viewModelScope.launch {
         _musicRRState.value = MusicRR.Loading
-        musicRepository.postMusicRecommend(comment)
+        authRepository.musicRR()
             .asResult()
             .collectLatest { result ->
+                Log.d("MusicRR", "Result: $result")
                 when (result) {
                     is Result.Loading -> _musicRRState.value = MusicRR.Loading
                     is Result.Success -> _musicRRState.value = MusicRR.Success(result.data)
@@ -165,7 +166,6 @@ class SignInViewModel @Inject constructor(
                 }
             }
     }
-
     internal fun fetchPlaylistDetail(playlistId: Long) = viewModelScope.launch {
         musicRepository.getPlaylistDetail(playlistId)
             .asResult()
