@@ -4,6 +4,6 @@ import com.school_of_company.network.dto.post.response.EmotionHistoryResponse
 import retrofit2.http.GET
 
 interface EmotionAPI {
-    @GET("emotions")
+    @GET("/emotions")
     suspend fun getEmotionHistory(): EmotionHistoryResponse
 }

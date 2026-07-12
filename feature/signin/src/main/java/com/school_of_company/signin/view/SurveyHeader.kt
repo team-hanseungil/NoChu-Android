@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
-
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -49,7 +48,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.school_of_company.design_system.component.toast.makeToast
 import com.school_of_company.signin.viewmodel.SignInViewModel
 import com.school_of_company.signin.viewmodel.uistate.PostSuveyUiState
-import com.school_of_company.signin.viewmodel.uistate.SignInUiState
 
 // ---------- 색상 정의 ----------
 private val PurpleMain = Color(0xFFB8AFFB)
@@ -145,98 +143,99 @@ private fun SurveyScreen(
     onHappyOptionSelect: (String) -> Unit,
     onCompleteClick: () -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(ScreenBackground),
-            contentPadding = PaddingValues(bottom = 100.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                SurveyHeader()
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            item {
-                SurveyCard {
-                    GenreQuestion(
-                        selectedGenres = selectedGenres,
-                        onGenreToggle = onGenreToggle
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                SurveyCard {
-                    ArtistQuestion(
-                        value = artistInput,
-                        onValueChange = onArtistInputChange
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                SurveyCard {
-                    Text(
-                        "기분이 안 좋을 때 나는 보통...",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    sadMoodOptions.forEachIndexed { index, (value, title, subtitle) ->
-                        RadioOptionCard(
-                            title = title,
-                            subtitle = subtitle,
-                            selected = selectedSadOption == value,
-                            onClick = { onSadOptionSelect(value) }
-                        )
-                        if (index != sadMoodOptions.lastIndex) {
-                            Spacer(modifier = Modifier.height(10.dp))
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                SurveyCard {
-                    Text(
-                        "반대로 기분이 좋을 때 나는 보통...",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    happyMoodOptions.forEachIndexed { index, (value, title) ->
-                        RadioOptionCard(
-                            title = title,
-                            subtitle = null,
-                            selected = selectedHappyOption == value,
-                            onClick = { onHappyOptionSelect(value) }
-                        )
-                        if (index != happyMoodOptions.lastIndex) {
-                            Spacer(modifier = Modifier.height(10.dp))
-                        }
-                    }
-                }
-            }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(ScreenBackground),
+        contentPadding = PaddingValues(bottom = 40.dp) // 버튼 아래 패드 내비게이션 바 등을 고려한 안전 여백
+    ) {
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+            SurveyHeader()
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
-        Button(
-            onClick = onCompleteClick,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(16.dp)
-                .height(56.dp),
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PurpleDark)
-        ) {
-            Text("완료하고 시작하기", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        item {
+            SurveyCard {
+                GenreQuestion(
+                    selectedGenres = selectedGenres,
+                    onGenreToggle = onGenreToggle
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            SurveyCard {
+                ArtistQuestion(
+                    value = artistInput,
+                    onValueChange = onArtistInputChange
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            SurveyCard {
+                Text(
+                    "기분이 안 좋을 때 나는 보통...",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                sadMoodOptions.forEachIndexed { index, (value, title, subtitle) ->
+                    RadioOptionCard(
+                        title = title,
+                        subtitle = subtitle,
+                        selected = selectedSadOption == value,
+                        onClick = { onSadOptionSelect(value) }
+                    )
+                    if (index != sadMoodOptions.lastIndex) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            SurveyCard {
+                Text(
+                    "반대로 기분이 좋을 때 나는 보통...",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                happyMoodOptions.forEachIndexed { index, (value, title) ->
+                    RadioOptionCard(
+                        title = title,
+                        subtitle = null,
+                        selected = selectedHappyOption == value,
+                        onClick = { onHappyOptionSelect(value) }
+                    )
+                    if (index != happyMoodOptions.lastIndex) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp)) // 마지막 카드와 완료 버튼 사이 여백
+        }
+
+        // ★ 완료 버튼을 스크롤 내부 아이템으로 안착시켜 화면 짤림 방지
+        item {
+            Button(
+                onClick = onCompleteClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .height(56.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PurpleDark)
+            ) {
+                Text("완료하고 시작하기", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
         }
     }
 }
@@ -376,15 +375,12 @@ private fun RadioOptionCard(
             colors = RadioButtonDefaults.colors(selectedColor = PurpleDark)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        // ★ 수정: weight(1f)를 줘서 남은 가로 공간을 모두 차지하도록 함.
-        // 이게 없으면 Row 안의 Column이 텍스트 길이만큼만 차지하려다
-        // 카드 폭을 넘어서면서 글자가 잘리거나 밀려나 보일 수 있음.
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 fontSize = 15.sp,
-                lineHeight = 20.sp, // ★ 두 줄 이상일 때 줄 간격 확보
-                color = Color.Black // ★ 테마의 기본 글자색(다크 테마 시 흰색일 수 있음)에 영향받지 않도록 명시
+                lineHeight = 20.sp,
+                color = Color.Black
             )
             if (subtitle != null) {
                 Spacer(modifier = Modifier.height(2.dp))

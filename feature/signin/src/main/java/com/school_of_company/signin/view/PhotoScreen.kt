@@ -98,18 +98,26 @@ val emotionEmojis: Map<String, String> = mapOf(
 
 data class EmotionItem(val label: String, val percent: Float)
 
-// ⭕ [에러 해결 1] 모델 스펙 유추 에러 방지:
-// 원래 변환 로직이 명확치 않다면, EmotionResponseModel 내부에 확실히 존재하는 필드로 매핑하거나 임시 상수를 배정하세요.
+// EmotionResponseModel.emotions(happy, surprise, anger, anxiety, hurt, sad) 중
+// 기쁨/슬픔/분노/놀람 4개만 사용해서 실제 값으로 매핑
 fun EmotionResponseModel.toEmotionItems(): List<EmotionItem> {
+    val e = this.emotions
+
+    val rawValues = listOf(e.happy, e.surprise, e.anger, e.sad)
+    val sum = rawValues.sum()
+    // 서버 값이 0.0~1.0 비율이면 100을 곱하고, 이미 0~100 퍼센트라면 그대로 사용
+    val scale = if (sum in 0.0..1.5) 100f else 1f
+
     return listOf(
-        EmotionItem("분석 결과", 100f)
-        // ⚠️ 에러가 지속된다면 이 함수를 지우고, 기존에 쓰시던 실제 Mapper 함수(예: toModel() 등)를 import 해서 사용하세요!
-    )
+        EmotionItem("기쁨", (e.happy * scale).toFloat()),
+        EmotionItem("슬픔", (e.sad * scale).toFloat()),
+        EmotionItem("분노", (e.anger * scale).toFloat()),
+        EmotionItem("놀람", (e.surprise * scale).toFloat())
+    ).sortedByDescending { it.percent }
 }
 
 @Composable
 fun PhotoUploadRoute(
-    // ⭕ [에러 해결 2] 내비게이션 등 외부 호출 단의 에러를 무마하기 위해 memberId를 다시 선언하되, 내부에선 쓰지 않고 방치합니다.
     memberId: Long,
     viewModel: SignInViewModel = hiltViewModel(),
     onNavigateToMusicRecommend: () -> Unit
@@ -172,6 +180,7 @@ fun PhotoUploadRoute(
                     }
                 )
             }
+
             1 -> {
                 AnalysisContent(
                     modifier = Modifier.padding(paddingValues),
@@ -185,21 +194,22 @@ fun PhotoUploadRoute(
                     onMusicClick = { selectedIndex = 2 }
                 )
             }
+
             2 -> {
                 GwangSanTheme { colors, typography ->
                     Box(
                         modifier = Modifier
                             .padding(paddingValues)
                             .fillMaxSize()
-                            .background(GwangSanColor.gray100)
+                            .background(colors.gray100)
                     ) {
-                        if (musicRRState is MusicRR.Success || musicRRState is MusicRR.Loading) {
-                            Text("플레이리스트 로딩/성공 상태", modifier = Modifier.align(Alignment.Center))
-                        } else {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text("Music Screen")
-                            }
-                        }
+                        lPlaylistDetailContent(
+                            colors = colors,
+                            typography = typography,
+                            playlistId = 0L,
+                            uiState = musicRRState,
+                            onBackClicked = { selectedIndex = 1 }
+                        )
                     }
                 }
             }
@@ -819,9 +829,18 @@ fun AnalysisContent(
                                 color = colors.black
                             )
 
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // 대표 감정 표시
+                            Text(
+                                text = "오늘의 감정: ${data.emotion}",
+                                style = typography.body2.copy(fontWeight = FontWeight.SemiBold),
+                                color = colors.purple
+                            )
+
                             Spacer(modifier = Modifier.height(14.dp))
 
-                            (emotionItems as Iterable<EmotionItem>).forEach { item ->
+                            emotionItems.forEach { item ->
                                 EmotionRow(
                                     label = item.label,
                                     percent = item.percent,
@@ -848,6 +867,22 @@ fun AnalysisContent(
                                 Text(
                                     text = "음악 추천하기",
                                     style = typography.body1.copy(fontWeight = FontWeight.SemiBold)
+                                )
+                            }
+
+                            // AI 코멘트 - 음악 추천하기 버튼 아래에 표시
+                            if (data.comment.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(20.dp))
+                                Text(
+                                    text = "AI 코멘트",
+                                    style = typography.titleSmall,
+                                    color = colors.black
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = data.comment,
+                                    style = typography.body4,
+                                    color = colors.gray700
                                 )
                             }
                         }
