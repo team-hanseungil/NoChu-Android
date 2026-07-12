@@ -35,9 +35,10 @@ data class Emotions(
 
 @JsonClass(generateAdapter = true)
 data class PlaylistResponse(
-    @Json(name = "id") val id: Long,
+    @Json(name = "id") val id: String,
     @Json(name = "title") val title: String,
     @Json(name = "imageUrl") val imageUrl: String?,
+    @Json(name= "spotifyUrl") val spotifyUrl: String,
     @Json(name = "tracks") val tracks: List<Track>
 )
 

@@ -63,6 +63,7 @@ fun PlaylistResponse.toModel(): PlaylistResponseModel =
         id = id,
         title = title,
         imageUrl = imageUrl,
+        spotifyUrl = spotifyUrl,
         tracks = tracks.map { it.toModel() }
     )
 

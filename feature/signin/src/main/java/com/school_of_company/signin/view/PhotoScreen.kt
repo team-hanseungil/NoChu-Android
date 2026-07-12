@@ -191,7 +191,10 @@ fun PhotoUploadRoute(
                         viewModel.resetMusicRRState()
                         selectedIndex = 0
                     },
-                    onMusicClick = { selectedIndex = 2 }
+                    onMusicClick = {
+                        viewModel.musicRR(null) // 실제 음악 추천 API 호출
+                        selectedIndex = 2
+                    }
                 )
             }
 
