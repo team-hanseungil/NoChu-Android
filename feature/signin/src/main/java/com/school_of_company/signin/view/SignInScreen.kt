@@ -60,14 +60,24 @@ internal fun SignInRoute(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val response = AuthorizationClient.getResponse(result.resultCode, result.data)
+
+        // ===== 디버그 로그 시작 =====
+        android.util.Log.d("SpotifyDebug", "resultCode = ${result.resultCode}")
+        android.util.Log.d("SpotifyDebug", "responseType = ${response.type}")
+        // ===== 디버그 로그 끝 =====
+
         when (response.type) {
             AuthorizationResponse.Type.CODE -> {
+                android.util.Log.d("SpotifyDebug", "code = ${response.code}") // 디버그 로그
                 viewModel.loginWithSpotify(response.code)
             }
             AuthorizationResponse.Type.ERROR -> {
+                android.util.Log.e("SpotifyDebug", "error = ${response.error}") // 디버그 로그 (핵심)
                 onErrorToast(Exception(response.error), null)
             }
-            else -> Unit
+            else -> {
+                android.util.Log.d("SpotifyDebug", "else branch, type = ${response.type}") // 디버그 로그
+            }
         }
     }
 
@@ -90,7 +100,12 @@ internal fun SignInRoute(
             val appInfo = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
             val spotifyClientId = appInfo.metaData?.getString("spotify_client_id") ?: ""
 
-            val spotifyRedirectUri ="nochu://auth/spotify/callback"
+            // ===== 디버그 로그 =====
+            android.util.Log.d("SpotifyDebug", "clientId = $spotifyClientId")
+
+            val spotifyRedirectUri = "nochu://auth/spotify/callback"
+            android.util.Log.d("SpotifyDebug", "redirectUri = $spotifyRedirectUri")
+            // ===== 디버그 로그 끝 =====
 
             val request = AuthorizationRequest.Builder(
                 spotifyClientId,

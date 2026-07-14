@@ -202,8 +202,13 @@ class SignInViewModel @Inject constructor(
             .collectLatest { result ->
                 when (result) {
                     is Result.Loading -> _postFaceUiState.value = PostFaceUiState.Loading
-                    is Result.Success -> _postFaceUiState.value = PostFaceUiState.Success(result.data)
-                    is Result.Error   -> _postFaceUiState.value = PostFaceUiState.Error(result.exception)
+                    is Result.Success -> _postFaceUiState.value =
+                        PostFaceUiState.Success(result.data)
+
+                    is Result.Error -> {
+                        Log.e("PostFace", "postFace 실패", result.exception) // ← 추가
+                        _postFaceUiState.value = PostFaceUiState.Error(result.exception)
+                    }
                 }
             }
     }

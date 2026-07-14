@@ -12,7 +12,7 @@ android {
     buildFeatures {
         buildConfig = true
         defaultConfig {
-            buildConfigField("String", "BASE_URL", "\"${getApiKey("BASE_URL")}\"")
+            buildConfigField("String", "BASE_URL",  getApiKey("BASE_URL"))
         }
     }
 }

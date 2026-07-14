@@ -45,8 +45,6 @@ data class EmotionsModel(
     val happy: Double,
     val surprise: Double,
     val anger: Double,
-    val anxiety: Double,
-    val hurt: Double,
     val sad: Double
 )
 data class PostSurveyRequestModel(

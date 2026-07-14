@@ -28,8 +28,6 @@ data class Emotions(
     @Json(name = "happy") val happy: Double,
     @Json(name = "surprise") val surprise: Double,
     @Json(name = "anger") val anger: Double,
-    @Json(name = "anxiety") val anxiety: Double,
-    @Json(name = "hurt") val hurt: Double,
     @Json(name = "sad") val sad: Double
 )
 

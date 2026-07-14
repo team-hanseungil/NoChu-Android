@@ -53,8 +53,6 @@ fun Emotions.toModel(): EmotionsModel =
         happy = happy,
         surprise = surprise,
         anger = anger,
-        anxiety = anxiety,
-        hurt = hurt,
         sad = sad
     )
 
